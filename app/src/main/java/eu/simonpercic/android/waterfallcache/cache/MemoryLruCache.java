@@ -42,6 +42,7 @@ public class MemoryLruCache implements Cache {
         return Observable.create(new OnSubscribe<Boolean>() {
             @Override public void call(Subscriber<? super Boolean> subscriber) {
                 lruCache.remove(key);
+
                 subscriber.onNext(true);
                 subscriber.onCompleted();
             }
@@ -52,6 +53,7 @@ public class MemoryLruCache implements Cache {
         return Observable.create(new OnSubscribe<Boolean>() {
             @Override public void call(Subscriber<? super Boolean> subscriber) {
                 lruCache.evictAll();
+
                 subscriber.onNext(true);
                 subscriber.onCompleted();
             }

@@ -28,7 +28,7 @@ public class WaterfallCache implements Cache {
     }
 
     public <T> Observable<T> get(final String key, final Class<T> classOfT) {
-        return doOnce(null, cache -> cache.get(key, classOfT), value -> value != null)
+        return achieveOnce(null, cache -> cache.get(key, classOfT), value -> value != null)
                 .onErrorReturn(throwable -> null);
     }
 
@@ -37,7 +37,7 @@ public class WaterfallCache implements Cache {
     }
 
     public Observable<Boolean> contains(final String key) {
-        return doOnce(false, cache -> cache.contains(key), value -> value);
+        return achieveOnce(false, cache -> cache.contains(key), value -> value);
     }
 
     public Observable<Boolean> remove(final String key) {
@@ -60,7 +60,7 @@ public class WaterfallCache implements Cache {
         return observable.compose(applySchedulers());
     }
 
-    private <T> Observable<T> doOnce(T defaultValue, Func1<Cache, Observable<T>> cacheFn, Predicate<T> condition) {
+    private <T> Observable<T> achieveOnce(T defaultValue, Func1<Cache, Observable<T>> cacheFn, Predicate<T> condition) {
         Observable<T> observable = Observable.just(defaultValue);
 
         for (int i = 0; i < caches.size(); i++) {
