@@ -131,13 +131,11 @@ public class WaterfallCache implements Cache {
         }
 
         public Builder addMemoryCache(int size) {
-            caches.add(new MemoryLruCache(size));
-            return this;
+            return addCache(new MemoryLruCache(size));
         }
 
         public Builder addDiskCache(Context context, int sizeInBytes) {
-            caches.add(new ReservoirCache(context, sizeInBytes));
-            return this;
+            return addCache(new ReservoirCache(context, sizeInBytes));
         }
 
         public Builder addCache(Cache cache) {

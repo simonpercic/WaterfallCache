@@ -87,7 +87,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
     private void getTest() {
         Observable<String> test = waterfallCache.get("test", String.class);
-        test.subscribe(tvValueDisplay::setText);
+        test.subscribe(tvValueDisplay::setText, throwable -> showOnErrorMessage("Get", throwable));
     }
 
     private void putTest() {
