@@ -17,9 +17,12 @@ import rx.Observable;
 
 public class MainActivity extends ActionBarActivity implements OnClickListener {
 
+    private static final String DEFAULT_KEY = "test";
+
     private WaterfallCache waterfallCache;
     private TextView tvValueDisplay;
     private EditText etValueInput;
+    private EditText etKeyInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +31,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
         tvValueDisplay = (TextView) findViewById(R.id.tv_value_display);
         etValueInput = (EditText) findViewById(R.id.et_value_input);
+        etKeyInput = (EditText) findViewById(R.id.et_key_input);
+        etKeyInput.setText(DEFAULT_KEY);
 
         findViewById(R.id.btn_get_value).setOnClickListener(this);
         findViewById(R.id.btn_put_value).setOnClickListener(this);
@@ -86,7 +91,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
     }
 
     private void getTest() {
-        Observable<String> test = waterfallCache.get("test", String.class);
+        Observable<String> test = waterfallCache.get(getKey(), String.class);
         test.subscribe(tvValueDisplay::setText, throwable -> showOnErrorMessage("Get", throwable));
     }
 
@@ -95,19 +100,19 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
             return;
         }
 
-        waterfallCache.put("test", etValueInput.getText().toString()).subscribe(
+        waterfallCache.put(getKey(), etValueInput.getText().toString()).subscribe(
                 success -> showOnNextSuccessMessage("Put", success),
                 throwable -> showOnErrorMessage("Put", throwable));
     }
 
     private void removeTest() {
-        waterfallCache.remove("test").subscribe(
+        waterfallCache.remove(getKey()).subscribe(
                 success -> showOnNextSuccessMessage("Remove", success),
                 throwable -> showOnErrorMessage("Remove", throwable));
     }
 
     private void containsTest() {
-        waterfallCache.contains("test").subscribe(
+        waterfallCache.contains(getKey()).subscribe(
                 contains -> showMessage(String.format("Contains: %s", contains)),
                 throwable -> showOnErrorMessage("Contains", throwable));
     }
@@ -116,6 +121,16 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
         waterfallCache.clear().subscribe(
                 success -> showOnNextSuccessMessage("Clear", success),
                 throwable -> showOnErrorMessage("Clear", throwable));
+    }
+
+    private String getKey() {
+        String key = etKeyInput.getText().toString();
+
+        if (TextUtils.isEmpty(key)) {
+            return DEFAULT_KEY;
+        }
+
+        return key;
     }
 
     private void showOnNextSuccessMessage(String tag, boolean success) {
