@@ -12,6 +12,7 @@ import eu.simonpercic.android.waterfallcache.cache.ReservoirCache;
 import rx.Observable;
 import rx.Observable.Transformer;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
@@ -27,82 +28,55 @@ public class WaterfallCache implements Cache {
     }
 
     public <T> Observable<T> get(final String key, final Class<T> classOfT) {
-        Observable<T> observable = Observable.just((T) null);
-
-        for (int i = 0; i < caches.size(); i++) {
-            Cache cache = caches.get(i);
-
-            if (i == 0) {
-                observable = observable.flatMap(s -> cache.get(key, classOfT));
-            } else {
-                observable = observable.flatMap(o -> {
-                    if (o != null) {
-                        return Observable.just(o).subscribeOn(Schedulers.immediate());
-                    } else {
-                        return cache.get(key, classOfT);
-                    }
-                });
-            }
-        }
-
-        return observable
-                .onErrorReturn(throwable -> null)
-                .compose(applySchedulers());
+        return doOnce(null, cache -> cache.get(key, classOfT), value -> value != null)
+                .onErrorReturn(throwable -> null);
     }
 
     public Observable<Boolean> put(final String key, final Object object) {
+        return doOnAll(cache -> cache.put(key, object));
+    }
+
+    public Observable<Boolean> contains(final String key) {
+        return doOnce(false, cache -> cache.contains(key), value -> value);
+    }
+
+    public Observable<Boolean> remove(final String key) {
+        return doOnAll(cache -> cache.remove(key));
+    }
+
+    public Observable<Boolean> clear() {
+        return doOnAll(Cache::clear);
+    }
+
+    private Observable<Boolean> doOnAll(Func1<Cache, Observable<Boolean>> cacheFn) {
         Observable<Boolean> observable = Observable.just(false);
 
         for (int i = 0; i < caches.size(); i++) {
             Cache cache = caches.get(i);
 
-            observable = observable.flatMap(success -> cache.put(key, object));
+            observable = observable.flatMap(success -> cacheFn.call(cache));
         }
 
         return observable.compose(applySchedulers());
     }
 
-    public Observable<Boolean> contains(final String key) {
-        Observable<Boolean> observable = Observable.just(false);
+    private <T> Observable<T> doOnce(T defaultValue, Func1<Cache, Observable<T>> cacheFn, Predicate<T> condition) {
+        Observable<T> observable = Observable.just(defaultValue);
 
         for (int i = 0; i < caches.size(); i++) {
             Cache cache = caches.get(i);
 
             if (i == 0) {
-                observable = observable.flatMap(s -> cache.contains(key));
+                observable = observable.flatMap(s -> cacheFn.call(cache));
             } else {
-                observable = observable.flatMap(contains -> {
-                    if (contains) {
-                        return Observable.just(true).subscribeOn(Schedulers.immediate());
+                observable = observable.flatMap(value -> {
+                    if (condition.apply(value)) {
+                        return Observable.just(value).subscribeOn(Schedulers.immediate());
                     } else {
-                        return cache.contains(key);
+                        return cacheFn.call(cache);
                     }
                 });
             }
-        }
-
-        return observable.compose(applySchedulers());
-    }
-
-    public Observable<Boolean> remove(final String key) {
-        Observable<Boolean> observable = Observable.just(false);
-
-        for (int i = 0; i < caches.size(); i++) {
-            Cache cache = caches.get(i);
-
-            observable = observable.flatMap(success -> cache.remove(key));
-        }
-
-        return observable.compose(applySchedulers());
-    }
-
-    public Observable<Boolean> clear() {
-        Observable<Boolean> observable = Observable.just(false);
-
-        for (int i = 0; i < caches.size(); i++) {
-            Cache cache = caches.get(i);
-
-            observable = observable.flatMap(success -> cache.clear());
         }
 
         return observable.compose(applySchedulers());
@@ -115,6 +89,10 @@ public class WaterfallCache implements Cache {
     private <T> Transformer<T, T> applySchedulers() {
         //noinspection unchecked
         return (Transformer<T, T>) schedulersTransformer;
+    }
+
+    private interface Predicate<T> {
+        boolean apply(T value);
     }
 
     // region Builder
