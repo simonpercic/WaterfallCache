@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import eu.simonpercic.android.waterfallcache.cache.Cache;
-import eu.simonpercic.android.waterfallcache.cache.MemoryLruCache;
+import eu.simonpercic.android.waterfallcache.cache.ObservableMemoryLruCache;
 import eu.simonpercic.android.waterfallcache.cache.ReservoirCache;
 import rx.Observable;
 import rx.Observable.Transformer;
@@ -41,12 +41,11 @@ public class WaterfallCache implements Cache {
                             observable = observable.flatMap(success -> cache.put(key, resultWrapper.result));
                         }
 
-                        observable.subscribe(getSilentObserver());
+                        observable.subscribe(silentObserver());
                     }
 
-                    return resultWrapper;
-                })
-                .map(resultWrapper -> resultWrapper.result);
+                    return resultWrapper.result;
+                });
     }
 
     public Observable<Boolean> put(final String key, final Object object) {
@@ -57,12 +56,11 @@ public class WaterfallCache implements Cache {
         return achieveOnce(false, cache -> cache.contains(key), value -> value)
                 .map(resultWrapper -> {
                     if (resultWrapper.result && resultWrapper.hitCacheIdx > 0) {
-                        get(key, Object.class).subscribe(getSilentObserver());
+                        get(key, Object.class).subscribe(silentObserver());
                     }
 
-                    return resultWrapper;
-                })
-                .map(resultWrapper -> resultWrapper.result);
+                    return resultWrapper.result;
+                });
     }
 
     public Observable<Boolean> remove(final String key) {
@@ -139,7 +137,7 @@ public class WaterfallCache implements Cache {
         }
     }
 
-    private <T> Observer<T> getSilentObserver() {
+    private <T> Observer<T> silentObserver() {
         return new Observer<T>() {
             @Override public void onCompleted() {
 
@@ -168,8 +166,8 @@ public class WaterfallCache implements Cache {
             return new Builder();
         }
 
-        public Builder addMemoryCache(int size) {
-            return addCache(new MemoryLruCache(size));
+        public Builder addObservableMemoryCache(int size) {
+            return addCache(new ObservableMemoryLruCache(size));
         }
 
         public Builder addDiskCache(Context context, int sizeInBytes) {

@@ -3,18 +3,16 @@ package eu.simonpercic.android.waterfallcache.cache;
 import android.util.LruCache;
 
 import rx.Observable;
-import rx.Observable.OnSubscribe;
 import rx.Observable.Transformer;
-import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
 /**
  * Created by Simon Percic on 18/07/15.
  */
-public class MemoryLruCache implements Cache {
+public class ObservableMemoryLruCache implements Cache {
     private final LruCache<String, Object> lruCache;
 
-    public MemoryLruCache(int size) {
+    public ObservableMemoryLruCache(int size) {
         lruCache = new LruCache<>(size);
     }
 
@@ -24,14 +22,8 @@ public class MemoryLruCache implements Cache {
     }
 
     @Override public Observable<Boolean> put(String key, Object object) {
-        return Observable.create(new OnSubscribe<Boolean>() {
-            @Override public void call(Subscriber<? super Boolean> subscriber) {
-                lruCache.put(key, object);
-
-                subscriber.onNext(true);
-                subscriber.onCompleted();
-            }
-        }).compose(applySchedulers());
+        lruCache.put(key, object);
+        return successObservable();
     }
 
     @Override public Observable<Boolean> contains(String key) {
@@ -39,25 +31,17 @@ public class MemoryLruCache implements Cache {
     }
 
     @Override public Observable<Boolean> remove(String key) {
-        return Observable.create(new OnSubscribe<Boolean>() {
-            @Override public void call(Subscriber<? super Boolean> subscriber) {
-                lruCache.remove(key);
-
-                subscriber.onNext(true);
-                subscriber.onCompleted();
-            }
-        }).compose(applySchedulers());
+        lruCache.remove(key);
+        return successObservable();
     }
 
     @Override public Observable<Boolean> clear() {
-        return Observable.create(new OnSubscribe<Boolean>() {
-            @Override public void call(Subscriber<? super Boolean> subscriber) {
-                lruCache.evictAll();
+        lruCache.evictAll();
+        return successObservable();
+    }
 
-                subscriber.onNext(true);
-                subscriber.onCompleted();
-            }
-        }).compose(applySchedulers());
+    private Observable<Boolean> successObservable() {
+        return Observable.just(true).compose(applySchedulers());
     }
 
     @SuppressWarnings("RedundantCast")

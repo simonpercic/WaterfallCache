@@ -41,7 +41,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
         findViewById(R.id.btn_clear).setOnClickListener(this);
 
         waterfallCache = WaterfallCache.Builder.create()
-                .addMemoryCache(1000)
+                .addObservableMemoryCache(1000)
                 .addDiskCache(this, 1024 * 1024)
                 .build();
     }
