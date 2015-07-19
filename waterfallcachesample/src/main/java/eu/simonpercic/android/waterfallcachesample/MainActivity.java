@@ -35,7 +35,10 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
         findViewById(R.id.btn_contains_value).setOnClickListener(this);
         findViewById(R.id.btn_clear).setOnClickListener(this);
 
-        waterfallCache = WaterfallCache.create(this);
+        waterfallCache = WaterfallCache.Builder.create()
+                .addMemoryCache(1000)
+                .addDiskCache(this, 1024 * 1024)
+                .build();
     }
 
     @Override
@@ -105,7 +108,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
     private void containsTest() {
         waterfallCache.contains("test").subscribe(
-                success -> showOnNextSuccessMessage("Contains", success),
+                contains -> showMessage(String.format("Contains: %s", contains)),
                 throwable -> showOnErrorMessage("Contains", throwable));
     }
 
