@@ -31,4 +31,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Put Value" />
+
+    <Button
+        android:id="@+id/btn_remove_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Remove Value" />
+
+    <Button
+        android:id="@+id/btn_contains_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Contains Value" />
+
+    <Button
+        android:id="@+id/btn_clear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clear" />
 </LinearLayout>

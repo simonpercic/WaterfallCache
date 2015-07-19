@@ -6,6 +6,8 @@ import eu.simonpercic.android.waterfallcache.cache.Cache;
 import eu.simonpercic.android.waterfallcache.cache.MemoryLruCache;
 import eu.simonpercic.android.waterfallcache.cache.ReservoirCache;
 import rx.Observable;
+import rx.Observable.Transformer;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 /**
@@ -35,13 +37,15 @@ public class WaterfallCache implements Cache {
                         return diskCache.get(key, classOfT);
                     }
                 })
-                .onErrorReturn(throwable -> null);
+                .onErrorReturn(throwable -> null)
+                .compose(applySchedulers());
     }
 
     public Observable<Boolean> put(final String key, final Object object) {
         return Observable.just(key)
                 .flatMap(s -> memoryCache.put(key, object))
-                .flatMap(b -> diskCache.put(key, object));
+                .flatMap(b -> diskCache.put(key, object))
+                .compose(applySchedulers());
     }
 
     public Observable<Boolean> contains(final String key) {
@@ -53,18 +57,30 @@ public class WaterfallCache implements Cache {
                     } else {
                         return diskCache.contains(key);
                     }
-                });
+                })
+                .compose(applySchedulers());
     }
 
     public Observable<Boolean> remove(final String key) {
         return Observable.just(key)
                 .flatMap(s -> memoryCache.remove(key))
-                .flatMap(success -> diskCache.remove(key));
+                .flatMap(success -> diskCache.remove(key))
+                .compose(applySchedulers());
     }
 
     public Observable<Boolean> clear() {
         return Observable.just(null)
                 .flatMap(o -> memoryCache.clear())
-                .flatMap(success -> diskCache.clear());
+                .flatMap(success -> diskCache.clear())
+                .compose(applySchedulers());
+    }
+
+    @SuppressWarnings("RedundantCast")
+    private final Transformer schedulersTransformer = observable -> ((Observable) observable).observeOn(
+            AndroidSchedulers.mainThread());
+
+    private <T> Transformer<T, T> applySchedulers() {
+        //noinspection unchecked
+        return (Transformer<T, T>) schedulersTransformer;
     }
 }

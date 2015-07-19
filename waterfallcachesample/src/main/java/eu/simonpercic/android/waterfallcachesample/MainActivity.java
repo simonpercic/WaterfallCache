@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import eu.simonpercic.android.waterfallcache.WaterfallCache;
 import rx.Observable;
@@ -30,6 +31,9 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
         findViewById(R.id.btn_get_value).setOnClickListener(this);
         findViewById(R.id.btn_put_value).setOnClickListener(this);
+        findViewById(R.id.btn_remove_value).setOnClickListener(this);
+        findViewById(R.id.btn_contains_value).setOnClickListener(this);
+        findViewById(R.id.btn_clear).setOnClickListener(this);
 
         waterfallCache = WaterfallCache.create(this);
     }
@@ -66,6 +70,15 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
             case R.id.btn_put_value:
                 putTest();
                 break;
+            case R.id.btn_remove_value:
+                removeTest();
+                break;
+            case R.id.btn_contains_value:
+                containsTest();
+                break;
+            case R.id.btn_clear:
+                clearTest();
+                break;
         }
     }
 
@@ -79,6 +92,38 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
             return;
         }
 
-        waterfallCache.put("test", etValueInput.getText().toString()).subscribe();
+        waterfallCache.put("test", etValueInput.getText().toString()).subscribe(
+                success -> showOnNextSuccessMessage("Put", success),
+                throwable -> showOnErrorMessage("Put", throwable));
+    }
+
+    private void removeTest() {
+        waterfallCache.remove("test").subscribe(
+                success -> showOnNextSuccessMessage("Remove", success),
+                throwable -> showOnErrorMessage("Remove", throwable));
+    }
+
+    private void containsTest() {
+        waterfallCache.contains("test").subscribe(
+                success -> showOnNextSuccessMessage("Contains", success),
+                throwable -> showOnErrorMessage("Contains", throwable));
+    }
+
+    private void clearTest() {
+        waterfallCache.clear().subscribe(
+                success -> showOnNextSuccessMessage("Clear", success),
+                throwable -> showOnErrorMessage("Clear", throwable));
+    }
+
+    private void showOnNextSuccessMessage(String tag, boolean success) {
+        showMessage(String.format("%s: %s", tag, success ? "success" : "failed"));
+    }
+
+    private void showOnErrorMessage(String tag, Throwable throwable) {
+        showMessage(String.format("%s error: %s", tag, throwable.getMessage()));
+    }
+
+    private void showMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }
