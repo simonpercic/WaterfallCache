@@ -2,6 +2,8 @@ package eu.simonpercic.android.waterfallcache;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.LruCache;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +27,29 @@ public class WaterfallCache implements Cache {
     @NonNull
     private final List<Cache> caches;
 
-    private WaterfallCache(@NonNull List<Cache> caches) {
+    @Nullable
+    private final LruCache<String, Object> memoryCache;
+
+    private WaterfallCache(@NonNull List<Cache> caches, int inlineMemoryCacheSize) {
         this.caches = caches;
+
+        if (inlineMemoryCacheSize > 0) {
+            this.memoryCache = new LruCache<>(inlineMemoryCacheSize);
+        } else {
+            this.memoryCache = null;
+        }
     }
 
+    @Override
     public <T> Observable<T> get(final String key, final Class<T> classOfT) {
+        if (memoryCache != null) {
+            T memoryValue = classOfT.cast(memoryCache.get(key));
+
+            if (memoryValue != null) {
+                return Observable.just(memoryValue).compose(applySchedulers());
+            }
+        }
+
         return achieveOnce(null, cache -> cache.get(key, classOfT), value -> value != null)
                 .map(resultWrapper -> {
                     if (resultWrapper.result != null && resultWrapper.hitCacheIdx > 0) {
@@ -48,11 +68,25 @@ public class WaterfallCache implements Cache {
                 });
     }
 
+    @Override
     public Observable<Boolean> put(final String key, final Object object) {
+        if (memoryCache != null) {
+            memoryCache.put(key, object);
+        }
+
         return doOnAll(cache -> cache.put(key, object));
     }
 
+    @Override
     public Observable<Boolean> contains(final String key) {
+        if (memoryCache != null) {
+            Object memoryValue = memoryCache.get(key);
+
+            if (memoryValue != null) {
+                return Observable.just(true).compose(applySchedulers());
+            }
+        }
+
         return achieveOnce(false, cache -> cache.contains(key), value -> value)
                 .map(resultWrapper -> {
                     if (resultWrapper.result && resultWrapper.hitCacheIdx > 0) {
@@ -63,11 +97,21 @@ public class WaterfallCache implements Cache {
                 });
     }
 
+    @Override
     public Observable<Boolean> remove(final String key) {
+        if (memoryCache != null) {
+            memoryCache.remove(key);
+        }
+
         return doOnAll(cache -> cache.remove(key));
     }
 
+    @Override
     public Observable<Boolean> clear() {
+        if (memoryCache != null) {
+            memoryCache.evictAll();
+        }
+
         return doOnAll(Cache::clear);
     }
 
@@ -157,6 +201,7 @@ public class WaterfallCache implements Cache {
 
     public static class Builder {
         private final List<Cache> caches;
+        private int inlineMemoryCacheSize;
 
         private Builder() {
             caches = new ArrayList<>();
@@ -164,6 +209,11 @@ public class WaterfallCache implements Cache {
 
         public static Builder create() {
             return new Builder();
+        }
+
+        public Builder addMemoryCache(int size) {
+            inlineMemoryCacheSize = size;
+            return this;
         }
 
         public Builder addObservableMemoryCache(int size) {
@@ -180,7 +230,7 @@ public class WaterfallCache implements Cache {
         }
 
         public WaterfallCache build() {
-            return new WaterfallCache(caches);
+            return new WaterfallCache(caches, inlineMemoryCacheSize);
         }
     }
 
