@@ -24,7 +24,8 @@ public class ReservoirCache implements Cache {
     }
 
     @Override public <T> Observable<T> get(String key, Class<T> classOfT) {
-        return Reservoir.getAsync(key, classOfT).compose(applySchedulers());
+        return Reservoir.getAsync(key, classOfT).compose(applySchedulers())
+                .onErrorReturn(throwable -> null);
     }
 
     @Override public Observable<Boolean> put(String key, Object object) {

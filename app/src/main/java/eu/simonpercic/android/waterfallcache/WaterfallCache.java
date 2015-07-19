@@ -5,12 +5,14 @@ import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import eu.simonpercic.android.waterfallcache.cache.Cache;
 import eu.simonpercic.android.waterfallcache.cache.MemoryLruCache;
 import eu.simonpercic.android.waterfallcache.cache.ReservoirCache;
 import rx.Observable;
 import rx.Observable.Transformer;
+import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
@@ -29,7 +31,22 @@ public class WaterfallCache implements Cache {
 
     public <T> Observable<T> get(final String key, final Class<T> classOfT) {
         return achieveOnce(null, cache -> cache.get(key, classOfT), value -> value != null)
-                .onErrorReturn(throwable -> null);
+                .map(resultWrapper -> {
+                    if (resultWrapper.result != null && resultWrapper.hitCacheIdx > 0) {
+                        Observable<Boolean> observable = Observable.just(false);
+
+                        for (int i = 0; i < resultWrapper.hitCacheIdx; i++) {
+                            Cache cache = caches.get(i);
+
+                            observable = observable.flatMap(success -> cache.put(key, resultWrapper.result));
+                        }
+
+                        observable.subscribe(getSilentObserver());
+                    }
+
+                    return resultWrapper;
+                })
+                .map(resultWrapper -> resultWrapper.result);
     }
 
     public Observable<Boolean> put(final String key, final Object object) {
@@ -37,7 +54,15 @@ public class WaterfallCache implements Cache {
     }
 
     public Observable<Boolean> contains(final String key) {
-        return achieveOnce(false, cache -> cache.contains(key), value -> value);
+        return achieveOnce(false, cache -> cache.contains(key), value -> value)
+                .map(resultWrapper -> {
+                    if (resultWrapper.result && resultWrapper.hitCacheIdx > 0) {
+                        get(key, Object.class).subscribe(getSilentObserver());
+                    }
+
+                    return resultWrapper;
+                })
+                .map(resultWrapper -> resultWrapper.result);
     }
 
     public Observable<Boolean> remove(final String key) {
@@ -60,8 +85,14 @@ public class WaterfallCache implements Cache {
         return observable.compose(applySchedulers());
     }
 
-    private <T> Observable<T> achieveOnce(T defaultValue, Func1<Cache, Observable<T>> cacheFn, Predicate<T> condition) {
+    private <T> Observable<ResultWrapper<T>> achieveOnce(
+            T defaultValue,
+            Func1<Cache, Observable<T>> cacheFn,
+            Predicate<T> condition) {
+
         Observable<T> observable = Observable.just(defaultValue);
+
+        AtomicInteger hitIndex = new AtomicInteger();
 
         for (int i = 0; i < caches.size(); i++) {
             Cache cache = caches.get(i);
@@ -73,13 +104,16 @@ public class WaterfallCache implements Cache {
                     if (condition.apply(value)) {
                         return Observable.just(value).subscribeOn(Schedulers.immediate());
                     } else {
+                        hitIndex.incrementAndGet();
                         return cacheFn.call(cache);
                     }
                 });
             }
         }
 
-        return observable.compose(applySchedulers());
+        return observable
+                .map(t -> new ResultWrapper<>(t, hitIndex.get()))
+                .compose(applySchedulers());
     }
 
     @SuppressWarnings("RedundantCast")
@@ -93,6 +127,32 @@ public class WaterfallCache implements Cache {
 
     private interface Predicate<T> {
         boolean apply(T value);
+    }
+
+    private static class ResultWrapper<T> {
+        private final T result;
+        private final int hitCacheIdx;
+
+        public ResultWrapper(T result, int hitCacheIdx) {
+            this.result = result;
+            this.hitCacheIdx = hitCacheIdx;
+        }
+    }
+
+    private <T> Observer<T> getSilentObserver() {
+        return new Observer<T>() {
+            @Override public void onCompleted() {
+
+            }
+
+            @Override public void onError(Throwable e) {
+
+            }
+
+            @Override public void onNext(T t) {
+
+            }
+        };
     }
 
     // region Builder
