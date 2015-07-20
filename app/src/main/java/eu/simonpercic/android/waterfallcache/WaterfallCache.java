@@ -15,6 +15,7 @@ import eu.simonpercic.android.waterfallcache.cache.ReservoirCache;
 import rx.Observable;
 import rx.Observable.Transformer;
 import rx.Observer;
+import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
@@ -30,8 +31,12 @@ public class WaterfallCache implements Cache {
     @Nullable
     private final LruCache<String, Object> memoryCache;
 
+    @NonNull
+    private Scheduler observeOnScheduler;
+
     private WaterfallCache(@NonNull List<Cache> caches, int inlineMemoryCacheSize) {
         this.caches = caches;
+        this.observeOnScheduler = AndroidSchedulers.mainThread();
 
         if (inlineMemoryCacheSize > 0) {
             this.memoryCache = new LruCache<>(inlineMemoryCacheSize);
@@ -158,9 +163,16 @@ public class WaterfallCache implements Cache {
                 .compose(applySchedulers());
     }
 
+    @SuppressWarnings("NullableProblems")
+    public void setObserveOnScheduler(Scheduler scheduler) {
+        if (scheduler != null) {
+            observeOnScheduler = scheduler;
+        }
+    }
+
     @SuppressWarnings("RedundantCast")
     private final Transformer schedulersTransformer = observable -> ((Observable) observable).observeOn(
-            AndroidSchedulers.mainThread());
+            observeOnScheduler);
 
     private <T> Transformer<T, T> applySchedulers() {
         //noinspection unchecked

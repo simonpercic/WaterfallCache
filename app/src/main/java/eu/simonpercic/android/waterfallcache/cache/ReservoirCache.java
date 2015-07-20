@@ -55,8 +55,8 @@ public class ReservoirCache implements Cache {
     }
 
     @SuppressWarnings("RedundantCast")
-    private final Transformer schedulersTransformer = observable -> ((Observable) observable).subscribeOn(
-            Schedulers.io());
+    private final Transformer schedulersTransformer = observable -> ((Observable) observable)
+            .subscribeOn(Schedulers.io()).observeOn(Schedulers.immediate());
 
     private <T> Transformer<T, T> applySchedulers() {
         //noinspection unchecked
