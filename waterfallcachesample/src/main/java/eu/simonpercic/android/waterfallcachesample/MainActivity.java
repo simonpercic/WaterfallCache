@@ -11,7 +11,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.concurrent.TimeUnit;
+
 import eu.simonpercic.android.waterfallcache.WaterfallCache;
+import eu.simonpercic.android.waterfallcache.cache.Cache;
+import eu.simonpercic.android.waterfallcache.expire.LazyExpirableCache;
 import rx.Observable;
 
 
@@ -19,7 +23,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
     private static final String DEFAULT_KEY = "test";
 
-    private WaterfallCache waterfallCache;
+    private Cache waterfallCache;
     private TextView tvValueDisplay;
     private EditText etValueInput;
     private EditText etKeyInput;
@@ -40,10 +44,12 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
         findViewById(R.id.btn_contains_value).setOnClickListener(this);
         findViewById(R.id.btn_clear).setOnClickListener(this);
 
-        waterfallCache = WaterfallCache.Builder.create()
+        Cache cache = WaterfallCache.Builder.create()
                 .addMemoryCache(1000)
                 .addDiskCache(this, 1024 * 1024)
                 .build();
+
+        waterfallCache = LazyExpirableCache.fromCache(cache, 10, TimeUnit.SECONDS);
     }
 
     @Override

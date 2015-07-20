@@ -12,9 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import eu.simonpercic.android.waterfallcache.cache.Cache;
 import eu.simonpercic.android.waterfallcache.cache.ObservableMemoryLruCache;
 import eu.simonpercic.android.waterfallcache.cache.ReservoirCache;
+import eu.simonpercic.android.waterfallcache.util.ObserverUtil;
 import rx.Observable;
 import rx.Observable.Transformer;
-import rx.Observer;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
@@ -66,7 +66,7 @@ public class WaterfallCache implements Cache {
                             observable = observable.flatMap(success -> cache.put(key, resultWrapper.result));
                         }
 
-                        observable.subscribe(silentObserver());
+                        observable.subscribe(ObserverUtil.silentObserver());
                     }
 
                     return resultWrapper.result;
@@ -95,7 +95,7 @@ public class WaterfallCache implements Cache {
         return achieveOnce(false, cache -> cache.contains(key), value -> value)
                 .map(resultWrapper -> {
                     if (resultWrapper.result && resultWrapper.hitCacheIdx > 0) {
-                        get(key, Object.class).subscribe(silentObserver());
+                        get(key, Object.class).subscribe(ObserverUtil.silentObserver());
                     }
 
                     return resultWrapper.result;
@@ -191,22 +191,6 @@ public class WaterfallCache implements Cache {
             this.result = result;
             this.hitCacheIdx = hitCacheIdx;
         }
-    }
-
-    private <T> Observer<T> silentObserver() {
-        return new Observer<T>() {
-            @Override public void onCompleted() {
-
-            }
-
-            @Override public void onError(Throwable e) {
-
-            }
-
-            @Override public void onNext(T t) {
-
-            }
-        };
     }
 
     // region Builder
