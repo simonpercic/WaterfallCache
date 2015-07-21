@@ -1,5 +1,6 @@
 package eu.simonpercic.android.waterfallcache.cache;
 
+import android.support.annotation.NonNull;
 import android.util.LruCache;
 
 import rx.Observable;
@@ -7,35 +8,64 @@ import rx.Observable.Transformer;
 import rx.schedulers.Schedulers;
 
 /**
+ * Observable memory cache.
+ * <p>
  * Created by Simon Percic on 18/07/15.
  */
 public class ObservableMemoryLruCache implements Cache {
+
+    // the underlying LruCache that holds the values
     private final LruCache<String, Object> lruCache;
 
+    /**
+     * Observable memory cache.
+     *
+     * @param size max items to cache
+     */
     public ObservableMemoryLruCache(int size) {
         lruCache = new LruCache<>(size);
     }
 
-    @Override public <T> Observable<T> get(String key, Class<T> classOfT) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull
+    public <T> Observable<T> get(@NonNull String key, @NonNull Class<T> classOfT) {
         T value = classOfT.cast(lruCache.get(key));
         return Observable.just(value).compose(applySchedulers());
     }
 
-    @Override public Observable<Boolean> put(String key, Object object) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull
+    public Observable<Boolean> put(@NonNull String key, @NonNull Object object) {
         lruCache.put(key, object);
         return successObservable();
     }
 
-    @Override public Observable<Boolean> contains(String key) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull
+    public Observable<Boolean> contains(@NonNull String key) {
         return get(key, Object.class).flatMap(o -> Observable.just(o != null).compose(applySchedulers()));
     }
 
-    @Override public Observable<Boolean> remove(String key) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull
+    public Observable<Boolean> remove(@NonNull String key) {
         lruCache.remove(key);
         return successObservable();
     }
 
-    @Override public Observable<Boolean> clear() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull
+    public Observable<Boolean> clear() {
         lruCache.evictAll();
         return successObservable();
     }

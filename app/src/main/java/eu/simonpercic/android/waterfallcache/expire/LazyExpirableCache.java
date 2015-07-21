@@ -1,19 +1,27 @@
 package eu.simonpercic.android.waterfallcache.expire;
 
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 
 import java.util.concurrent.TimeUnit;
 
 import eu.simonpercic.android.waterfallcache.cache.Cache;
 import eu.simonpercic.android.waterfallcache.util.ObserverUtil;
 import rx.Observable;
-import rx.functions.Func1;
 
 /**
+ * Lazily expirable cache.
+ * Cache items expire after a set time.
+ * Being lazy, items only expire when getting them from cache.
+ * <p>
  * Created by Simon Percic on 20/07/15.
  */
 public class LazyExpirableCache implements Cache {
+
+    // the underlying cache that holds the values
     private final Cache underlyingCache;
+
+    // expire after milliseconds
     private final long expireMillis;
 
     private LazyExpirableCache(Cache underlyingCache, long expireMillis) {
@@ -21,42 +29,63 @@ public class LazyExpirableCache implements Cache {
         this.expireMillis = expireMillis;
     }
 
+    /**
+     * Creates an lazy expirable cache from an actual Cache.
+     *
+     * @param cache the underlying cache that will hold the values
+     * @param expireAfter expire after value
+     * @param expireAfterUnit expire after time unit
+     * @return lazy expirable cache instance
+     */
     public static LazyExpirableCache fromCache(Cache cache, long expireAfter, TimeUnit expireAfterUnit) {
         long millis = expireAfterUnit.toMillis(expireAfter);
         return new LazyExpirableCache(cache, millis);
     }
 
-    @Override public <T> Observable<T> get(String key, Class<T> classOfT) {
-        return underlyingCache.get(key, TimedValue.class).map(new Func1<TimedValue, T>() {
-            @Override public T call(TimedValue timedValue) {
-                if (timedValue == null) {
-                    return null;
-                }
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull public <T> Observable<T> get(@NonNull String key, @NonNull Class<T> classOfT) {
+        return underlyingCache.get(key, TimedValue.class).map(timedValue -> {
+            if (timedValue == null) {
+                return null;
+            }
 
-                if (timedValue.addedOn + expireMillis < SystemClock.elapsedRealtime()) {
-                    underlyingCache.remove(key).subscribe(ObserverUtil.silentObserver());
-                    return null;
-                } else {
-                    return classOfT.cast(timedValue.value);
-                }
+            if (timedValue.addedOn + expireMillis < SystemClock.elapsedRealtime()) {
+                underlyingCache.remove(key).subscribe(ObserverUtil.silentObserver());
+                return null;
+            } else {
+                return classOfT.cast(timedValue.value);
             }
         });
     }
 
-    @Override public Observable<Boolean> put(String key, Object object) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull public Observable<Boolean> put(@NonNull String key, @NonNull Object object) {
         TimedValue timedValue = new TimedValue(object);
         return underlyingCache.put(key, timedValue);
     }
 
-    @Override public Observable<Boolean> contains(String key) {
-        return underlyingCache.contains(key);
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull public Observable<Boolean> contains(@NonNull String key) {
+        return get(key, Object.class).flatMap(o -> Observable.just(o != null));
     }
 
-    @Override public Observable<Boolean> remove(String key) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull public Observable<Boolean> remove(@NonNull String key) {
         return underlyingCache.remove(key);
     }
 
-    @Override public Observable<Boolean> clear() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull public Observable<Boolean> clear() {
         return underlyingCache.clear();
     }
 

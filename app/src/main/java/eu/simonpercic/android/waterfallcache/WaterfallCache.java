@@ -21,16 +21,24 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
+ * Waterfall cache.
+ * Composed of cache levels, if level N does not contain a value, tries to get it from level N+1.
+ * Writes cache value from level N+1 to level N, if N does not contain it.
+ * Writes and deletes values from all levels on {#put} and {#remove}.
+ * <p>
  * Created by Simon Percic on 17/07/15.
  */
 public class WaterfallCache implements Cache {
 
+    // cache levels
     @NonNull
     private final List<Cache> caches;
 
+    // inline memory cache, separate to cache levels for performance's sake
     @Nullable
     private final LruCache<String, Object> memoryCache;
 
+    // observe on Scheduler
     @NonNull
     private Scheduler observeOnScheduler;
 
@@ -45,8 +53,11 @@ public class WaterfallCache implements Cache {
         }
     }
 
-    @Override
-    public <T> Observable<T> get(final String key, final Class<T> classOfT) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull
+    public <T> Observable<T> get(@NonNull final String key, @NonNull final Class<T> classOfT) {
         if (memoryCache != null) {
             T memoryValue = classOfT.cast(memoryCache.get(key));
 
@@ -73,8 +84,11 @@ public class WaterfallCache implements Cache {
                 });
     }
 
-    @Override
-    public Observable<Boolean> put(final String key, final Object object) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull
+    public Observable<Boolean> put(@NonNull final String key, @NonNull final Object object) {
         if (memoryCache != null) {
             memoryCache.put(key, object);
         }
@@ -82,8 +96,11 @@ public class WaterfallCache implements Cache {
         return doOnAll(cache -> cache.put(key, object));
     }
 
-    @Override
-    public Observable<Boolean> contains(final String key) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull
+    public Observable<Boolean> contains(@NonNull final String key) {
         if (memoryCache != null) {
             Object memoryValue = memoryCache.get(key);
 
@@ -102,8 +119,11 @@ public class WaterfallCache implements Cache {
                 });
     }
 
-    @Override
-    public Observable<Boolean> remove(final String key) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull
+    public Observable<Boolean> remove(@NonNull final String key) {
         if (memoryCache != null) {
             memoryCache.remove(key);
         }
@@ -111,7 +131,10 @@ public class WaterfallCache implements Cache {
         return doOnAll(cache -> cache.remove(key));
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
+    @Override @NonNull
     public Observable<Boolean> clear() {
         if (memoryCache != null) {
             memoryCache.evictAll();
@@ -120,6 +143,12 @@ public class WaterfallCache implements Cache {
         return doOnAll(Cache::clear);
     }
 
+    /**
+     * Performs a cache function on all cache levels sequentially.
+     *
+     * @param cacheFn cache function to perform on all cache levels
+     * @return Observable that emits <tt>true</tt> if successful, <tt>false</tt> otherwise
+     */
     private Observable<Boolean> doOnAll(Func1<Cache, Observable<Boolean>> cacheFn) {
         Observable<Boolean> observable = Observable.just(false);
 
@@ -132,6 +161,15 @@ public class WaterfallCache implements Cache {
         return observable.compose(applySchedulers());
     }
 
+    /**
+     * Performs a cache function on each cache level sequentially, until one cache level fulfills the predicate.
+     *
+     * @param defaultValue default value to emit if unsuccessful
+     * @param cacheFn cache function to perform
+     * @param condition predicate condition
+     * @param <T> type of value
+     * @return Observable that emits the value
+     */
     private <T> Observable<ResultWrapper<T>> achieveOnce(
             T defaultValue,
             Func1<Cache, Observable<T>> cacheFn,
@@ -163,6 +201,11 @@ public class WaterfallCache implements Cache {
                 .compose(applySchedulers());
     }
 
+    /**
+     * Sets a scheduler to observe on.
+     *
+     * @param scheduler Scheduler
+     */
     @SuppressWarnings("NullableProblems")
     public void setObserveOnScheduler(Scheduler scheduler) {
         if (scheduler != null) {
@@ -195,6 +238,9 @@ public class WaterfallCache implements Cache {
 
     // region Builder
 
+    /**
+     * Cache builder
+     */
     public static class Builder {
         private final List<Cache> caches;
         private int inlineMemoryCacheSize;
@@ -203,28 +249,65 @@ public class WaterfallCache implements Cache {
             caches = new ArrayList<>();
         }
 
+        /**
+         * Creates a new cache builder.
+         *
+         * @return cache builder
+         */
         public static Builder create() {
             return new Builder();
         }
 
+        /**
+         * Add an inline memory cache to the cache levels. Should probably be called before adding other cache levels.
+         *
+         * @param size max items to cache
+         * @return Builder
+         */
         public Builder addMemoryCache(int size) {
             inlineMemoryCacheSize = size;
             return this;
         }
 
+        /**
+         * Add a pre-defined observable memory cache to the cache levels. Use {#addMemoryCache} for performance.
+         *
+         * @param size max items to cache
+         * @return Builder
+         * @see ObservableMemoryLruCache
+         */
         public Builder addObservableMemoryCache(int size) {
             return addCache(new ObservableMemoryLruCache(size));
         }
 
+        /**
+         * Add a pre-defined disk cache to the cache levels.
+         *
+         * @param context context
+         * @param sizeInBytes max cache size in bytes
+         * @return Builder
+         * @see ReservoirCache
+         */
         public Builder addDiskCache(Context context, int sizeInBytes) {
             return addCache(new ReservoirCache(context, sizeInBytes));
         }
 
+        /**
+         * Add a generic cache to the cache levels.
+         *
+         * @param cache cache
+         * @return Builder
+         */
         public Builder addCache(Cache cache) {
             caches.add(cache);
             return this;
         }
 
+        /**
+         * Builds the WaterfallCache.
+         *
+         * @return WaterfallCache
+         */
         public WaterfallCache build() {
             return new WaterfallCache(caches, inlineMemoryCacheSize);
         }
