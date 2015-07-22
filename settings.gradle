@@ -1,1 +1,1 @@
-include ':app', ':waterfallcachesample'
+include ':waterfallcache', ':waterfallcache-sample'
