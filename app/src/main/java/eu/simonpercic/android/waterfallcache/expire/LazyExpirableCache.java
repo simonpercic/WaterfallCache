@@ -1,6 +1,5 @@
 package eu.simonpercic.android.waterfallcache.expire;
 
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 
 import java.util.concurrent.TimeUnit;
@@ -45,13 +44,14 @@ public class LazyExpirableCache implements Cache {
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull public <T> Observable<T> get(@NonNull String key, @NonNull Class<T> classOfT) {
+    @Override @NonNull
+    public <T> Observable<T> get(@NonNull String key, @NonNull Class<T> classOfT) {
         return underlyingCache.get(key, TimedValue.class).map(timedValue -> {
             if (timedValue == null) {
                 return null;
             }
 
-            if (timedValue.addedOn + expireMillis < SystemClock.elapsedRealtime()) {
+            if (timedValue.addedOn + expireMillis < getCurrentTime()) {
                 underlyingCache.remove(key).subscribe(ObserverUtil.silentObserver());
                 return null;
             } else {
@@ -63,39 +63,47 @@ public class LazyExpirableCache implements Cache {
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull public Observable<Boolean> put(@NonNull String key, @NonNull Object object) {
-        TimedValue timedValue = new TimedValue(object);
+    @Override @NonNull
+    public Observable<Boolean> put(@NonNull String key, @NonNull Object object) {
+        TimedValue timedValue = new TimedValue(object, getCurrentTime());
         return underlyingCache.put(key, timedValue);
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull public Observable<Boolean> contains(@NonNull String key) {
+    @Override @NonNull
+    public Observable<Boolean> contains(@NonNull String key) {
         return get(key, Object.class).flatMap(o -> Observable.just(o != null));
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull public Observable<Boolean> remove(@NonNull String key) {
+    @Override @NonNull
+    public Observable<Boolean> remove(@NonNull String key) {
         return underlyingCache.remove(key);
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull public Observable<Boolean> clear() {
+    @Override @NonNull
+    public Observable<Boolean> clear() {
         return underlyingCache.clear();
     }
 
-    private static class TimedValue {
-        private Object value;
-        private long addedOn;
+    private static long getCurrentTime() {
+        return SystemCacheClock.getCurrentTime();
+    }
 
-        private TimedValue(Object value) {
+    static class TimedValue {
+        Object value;
+        long addedOn;
+
+        TimedValue(Object value, long time) {
             this.value = value;
-            this.addedOn = SystemClock.elapsedRealtime();
+            this.addedOn = time;
         }
     }
 }
