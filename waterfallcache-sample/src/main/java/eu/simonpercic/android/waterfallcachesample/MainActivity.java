@@ -49,7 +49,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
                 .addDiskCache(this, 1024 * 1024)
                 .build();
 
-        waterfallCache = LazyExpirableCache.fromCache(cache, 10, TimeUnit.SECONDS);
+        waterfallCache = LazyExpirableCache.fromCache(cache, 10, TimeUnit.MINUTES);
     }
 
     @Override
