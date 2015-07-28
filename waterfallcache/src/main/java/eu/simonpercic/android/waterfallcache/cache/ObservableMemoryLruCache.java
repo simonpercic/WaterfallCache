@@ -9,8 +9,8 @@ import rx.schedulers.Schedulers;
 
 /**
  * Observable memory cache.
- * <p>
- * Created by Simon Percic on 18/07/15.
+ *
+ * @author Simon Percic <a href="https://github.com/simonpercic">https://github.com/simonpercic</a>
  */
 public class ObservableMemoryLruCache implements Cache {
 

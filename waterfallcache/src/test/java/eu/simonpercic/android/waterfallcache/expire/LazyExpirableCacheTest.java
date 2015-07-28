@@ -24,7 +24,8 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 /**
  * LazyExpirableCache tests
- * Created by Simon Percic on 21/07/15.
+ *
+ * @author Simon Percic <a href="https://github.com/simonpercic">https://github.com/simonpercic</a>
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(SystemCacheClock.class)

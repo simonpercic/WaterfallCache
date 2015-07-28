@@ -25,8 +25,8 @@ import rx.schedulers.Schedulers;
  * Composed of cache levels, if level N does not contain a value, tries to get it from level N+1.
  * Writes cache value from level N+1 to level N, if N does not contain it.
  * Writes and deletes values from all levels on {#put} and {#remove}.
- * <p>
- * Created by Simon Percic on 17/07/15.
+ *
+ * @author Simon Percic <a href="https://github.com/simonpercic">https://github.com/simonpercic</a>
  */
 public class WaterfallCache implements Cache {
 

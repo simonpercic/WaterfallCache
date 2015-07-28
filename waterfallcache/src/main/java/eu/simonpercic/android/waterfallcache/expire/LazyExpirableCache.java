@@ -12,8 +12,8 @@ import rx.Observable;
  * Lazily expirable cache.
  * Cache items expire after a set time.
  * Being lazy, items only expire when getting them from cache.
- * <p>
- * Created by Simon Percic on 20/07/15.
+ *
+ * @author Simon Percic <a href="https://github.com/simonpercic">https://github.com/simonpercic</a>
  */
 public class LazyExpirableCache implements Cache {
 

@@ -6,8 +6,8 @@ import rx.Observable;
 
 /**
  * Generic cache interface
- * <p>
- * Created by Simon Percic on 18/07/15.
+ *
+ * @author Simon Percic <a href="https://github.com/simonpercic">https://github.com/simonpercic</a>
  */
 public interface Cache {
     /**

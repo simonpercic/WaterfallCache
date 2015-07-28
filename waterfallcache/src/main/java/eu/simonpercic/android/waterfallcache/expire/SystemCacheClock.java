@@ -3,7 +3,7 @@ package eu.simonpercic.android.waterfallcache.expire;
 import android.os.SystemClock;
 
 /**
- * Created by Simon Percic on 21/07/15.
+ * @author Simon Percic <a href="https://github.com/simonpercic">https://github.com/simonpercic</a>
  */
 public final class SystemCacheClock {
     private SystemCacheClock() {
