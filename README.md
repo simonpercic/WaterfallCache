@@ -13,6 +13,7 @@ Values are written and removed from all cache levels.
 
 ## Caches
 Includes the following caches:
+
 - memory cache, implemented by [LruCache](http://developer.android.com/reference/android/util/LruCache.html)
 - disk cache, implemented by the awesome [Reservoir](https://github.com/anupcowkur/Reservoir) by [Anup Cowkur](https://github.com/anupcowkur)
 
