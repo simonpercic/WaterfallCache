@@ -1,4 +1,4 @@
-package eu.simonpercic.android.waterfallcache.expire;
+package com.github.simonpercic.waterfallcache.expire;
 
 import android.os.SystemClock;
 

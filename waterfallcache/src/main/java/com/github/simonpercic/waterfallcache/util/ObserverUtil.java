@@ -1,4 +1,4 @@
-package eu.simonpercic.android.waterfallcache.util;
+package com.github.simonpercic.waterfallcache.util;
 
 import rx.Observer;
 

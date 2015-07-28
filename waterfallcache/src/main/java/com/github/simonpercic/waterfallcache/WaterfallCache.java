@@ -1,18 +1,19 @@
-package eu.simonpercic.android.waterfallcache;
+package com.github.simonpercic.waterfallcache;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.LruCache;
 
+import com.github.simonpercic.waterfallcache.cache.Cache;
+import com.github.simonpercic.waterfallcache.cache.ObservableMemoryLruCache;
+import com.github.simonpercic.waterfallcache.cache.ReservoirCache;
+import com.github.simonpercic.waterfallcache.util.ObserverUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import eu.simonpercic.android.waterfallcache.cache.Cache;
-import eu.simonpercic.android.waterfallcache.cache.ObservableMemoryLruCache;
-import eu.simonpercic.android.waterfallcache.cache.ReservoirCache;
-import eu.simonpercic.android.waterfallcache.util.ObserverUtil;
 import rx.Observable;
 import rx.Observable.Transformer;
 import rx.Scheduler;

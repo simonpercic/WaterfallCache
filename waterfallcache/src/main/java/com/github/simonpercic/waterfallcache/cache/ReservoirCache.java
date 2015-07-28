@@ -1,4 +1,4 @@
-package eu.simonpercic.android.waterfallcache.cache;
+package com.github.simonpercic.waterfallcache.cache;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

@@ -1,4 +1,4 @@
-package eu.simonpercic.android.waterfallcachesample;
+package com.github.simonpercic.waterfallcachesample;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -11,11 +11,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.simonpercic.waterfallcache.WaterfallCache;
+import com.github.simonpercic.waterfallcache.cache.Cache;
+import com.github.simonpercic.waterfallcache.expire.LazyExpirableCache;
+
 import java.util.concurrent.TimeUnit;
 
-import eu.simonpercic.android.waterfallcache.WaterfallCache;
-import eu.simonpercic.android.waterfallcache.cache.Cache;
-import eu.simonpercic.android.waterfallcache.expire.LazyExpirableCache;
 import rx.Observable;
 
 

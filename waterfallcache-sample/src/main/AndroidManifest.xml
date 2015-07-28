@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="eu.simonpercic.android.waterfallcachesample"
+<manifest package="com.github.simonpercic.waterfallcachesample"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application

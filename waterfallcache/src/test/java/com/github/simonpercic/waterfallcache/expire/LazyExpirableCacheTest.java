@@ -1,4 +1,7 @@
-package eu.simonpercic.android.waterfallcache.expire;
+package com.github.simonpercic.waterfallcache.expire;
+
+import com.github.simonpercic.waterfallcache.cache.Cache;
+import com.github.simonpercic.waterfallcache.expire.LazyExpirableCache.TimedValue;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -11,8 +14,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.concurrent.TimeUnit;
 
-import eu.simonpercic.android.waterfallcache.cache.Cache;
-import eu.simonpercic.android.waterfallcache.expire.LazyExpirableCache.TimedValue;
 import rx.Observable;
 
 import static org.junit.Assert.assertEquals;

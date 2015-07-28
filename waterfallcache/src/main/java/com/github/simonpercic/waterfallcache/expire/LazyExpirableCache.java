@@ -1,11 +1,12 @@
-package eu.simonpercic.android.waterfallcache.expire;
+package com.github.simonpercic.waterfallcache.expire;
 
 import android.support.annotation.NonNull;
 
+import com.github.simonpercic.waterfallcache.cache.Cache;
+import com.github.simonpercic.waterfallcache.util.ObserverUtil;
+
 import java.util.concurrent.TimeUnit;
 
-import eu.simonpercic.android.waterfallcache.cache.Cache;
-import eu.simonpercic.android.waterfallcache.util.ObserverUtil;
 import rx.Observable;
 
 /**

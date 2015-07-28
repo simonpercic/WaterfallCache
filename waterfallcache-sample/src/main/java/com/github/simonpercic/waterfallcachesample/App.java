@@ -1,4 +1,4 @@
-package eu.simonpercic.android.waterfallcachesample;
+package com.github.simonpercic.waterfallcachesample;
 
 import android.app.Application;
 import android.os.StrictMode;
