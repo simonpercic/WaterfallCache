@@ -1,7 +1,7 @@
 package com.github.simonpercic.waterfallcachesample;
 
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import rx.Observable;
 
 
-public class MainActivity extends ActionBarActivity implements OnClickListener {
+public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     private static final String DEFAULT_KEY = "test";
 
