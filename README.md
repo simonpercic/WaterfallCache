@@ -2,6 +2,8 @@
 
 An Observable Android cache composed of multiple cache levels.
 
+[![Build Status](https://api.travis-ci.org/simonpercic/WaterfallCache.svg?branch=master)](https://travis-ci.org/simonpercic/WaterfallCache)
+
 ## How does it work?
 ### Read operations
 When getting a value, it will first try to obtain it from the first cache level, if it does not contain it, it will try to obtain it from the next cache level. This continues through all cache levels until the value is obtained.
