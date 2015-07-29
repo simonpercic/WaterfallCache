@@ -17,10 +17,10 @@ Includes the following caches:
 - memory cache, implemented by [LruCache](http://developer.android.com/reference/android/util/LruCache.html)
 - disk cache, implemented by the awesome [Reservoir](https://github.com/anupcowkur/Reservoir) by [Anup Cowkur](https://github.com/anupcowkur)
 
-You can also implement your own cache and add it to cache levels, as long as it implements the Cache interface.
+You can also implement your own cache and add it to cache levels, as long as it implements the [Cache interface](waterfallcache/src/main/java/com/github/simonpercic/waterfallcache/cache/Cache.java).
 
 ## Values expiration
-The library includes as LazyExpirableCache that can work with any Cache. It enables lazy value expiration based on the insertion time and an expiration time. Since it's lazy, the values are removed only when trying to obtain them.
+The library includes a LazyExpirableCache that can work with any [Cache](waterfallcache/src/main/java/com/github/simonpercic/waterfallcache/cache/Cache.java). It enables lazy value expiration based on the insertion time and an expiration time. Since it's lazy, the values are removed only when trying to obtain them.
 
 ## Usage
 
@@ -60,4 +60,4 @@ See the included sample application to see a practical example of usage.
 
 ## License
 
-Open source, distributed under the MIT License.
+Open source, distributed under the MIT License. See [LICENSE](LICENSE) for details.
