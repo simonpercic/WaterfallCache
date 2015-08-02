@@ -99,8 +99,8 @@ artifacts {
 
 // Bintray
 bintray {
-    user = bintrayUser
-    key = bintrayApiKey
+    user = project.hasProperty('bintrayUser') ? bintrayUser : null
+    key = project.hasProperty('bintrayApiKey') ? bintrayApiKey : null
 
     configurations = ['archives']
     pkg {
@@ -116,7 +116,7 @@ bintray {
             desc = LIBRARY_DESCRIPTION
             gpg {
                 sign = true
-                passphrase = bintrayGpgPassword
+                passphrase = project.hasProperty('bintrayGpgPassword') ? bintrayGpgPassword : null
             }
         }
     }
