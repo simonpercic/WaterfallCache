@@ -26,8 +26,6 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:22.2.1'
-
     compile 'com.anupcowkur:reservoir:2.0'
     compile 'io.reactivex:rxjava:1.0.12'
 

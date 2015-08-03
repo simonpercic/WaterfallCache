@@ -1,8 +1,6 @@
 package com.github.simonpercic.waterfallcache;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.LruCache;
 
 import com.github.simonpercic.waterfallcache.cache.Cache;
@@ -32,18 +30,15 @@ import rx.schedulers.Schedulers;
 public class WaterfallCache implements Cache {
 
     // cache levels
-    @NonNull
     private final List<Cache> caches;
 
     // inline memory cache, separate to cache levels for performance's sake
-    @Nullable
     private final LruCache<String, Object> memoryCache;
 
     // observe on Scheduler
-    @NonNull
     private Scheduler observeOnScheduler;
 
-    private WaterfallCache(@NonNull List<Cache> caches, int inlineMemoryCacheSize) {
+    private WaterfallCache(List<Cache> caches, int inlineMemoryCacheSize) {
         this.caches = caches;
         this.observeOnScheduler = AndroidSchedulers.mainThread();
 
@@ -57,8 +52,8 @@ public class WaterfallCache implements Cache {
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
-    public <T> Observable<T> get(@NonNull final String key, @NonNull final Class<T> classOfT) {
+    @Override
+    public <T> Observable<T> get(final String key, final Class<T> classOfT) {
         if (memoryCache != null) {
             T memoryValue = classOfT.cast(memoryCache.get(key));
 
@@ -88,8 +83,8 @@ public class WaterfallCache implements Cache {
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
-    public Observable<Boolean> put(@NonNull final String key, @NonNull final Object object) {
+    @Override
+    public Observable<Boolean> put(final String key, final Object object) {
         if (memoryCache != null) {
             memoryCache.put(key, object);
         }
@@ -100,8 +95,8 @@ public class WaterfallCache implements Cache {
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
-    public Observable<Boolean> contains(@NonNull final String key) {
+    @Override
+    public Observable<Boolean> contains(final String key) {
         if (memoryCache != null) {
             Object memoryValue = memoryCache.get(key);
 
@@ -123,8 +118,8 @@ public class WaterfallCache implements Cache {
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
-    public Observable<Boolean> remove(@NonNull final String key) {
+    @Override
+    public Observable<Boolean> remove(final String key) {
         if (memoryCache != null) {
             memoryCache.remove(key);
         }
@@ -135,7 +130,7 @@ public class WaterfallCache implements Cache {
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
+    @Override
     public Observable<Boolean> clear() {
         if (memoryCache != null) {
             memoryCache.evictAll();

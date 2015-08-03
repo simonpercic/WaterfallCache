@@ -1,7 +1,5 @@
 package com.github.simonpercic.waterfallcache.expire;
 
-import android.support.annotation.NonNull;
-
 import com.github.simonpercic.waterfallcache.cache.Cache;
 import com.github.simonpercic.waterfallcache.util.ObserverUtil;
 
@@ -45,8 +43,8 @@ public class LazyExpirableCache implements Cache {
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
-    public <T> Observable<T> get(@NonNull String key, @NonNull Class<T> classOfT) {
+    @Override
+    public <T> Observable<T> get(String key, Class<T> classOfT) {
         return underlyingCache.get(key, TimedValue.class).map(timedValue -> {
             if (timedValue == null) {
                 return null;
@@ -64,8 +62,8 @@ public class LazyExpirableCache implements Cache {
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
-    public Observable<Boolean> put(@NonNull String key, @NonNull Object object) {
+    @Override
+    public Observable<Boolean> put(String key, Object object) {
         TimedValue timedValue = new TimedValue(object, getCurrentTime());
         return underlyingCache.put(key, timedValue);
     }
@@ -73,23 +71,23 @@ public class LazyExpirableCache implements Cache {
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
-    public Observable<Boolean> contains(@NonNull String key) {
+    @Override
+    public Observable<Boolean> contains(String key) {
         return get(key, Object.class).flatMap(o -> Observable.just(o != null));
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
-    public Observable<Boolean> remove(@NonNull String key) {
+    @Override
+    public Observable<Boolean> remove(String key) {
         return underlyingCache.remove(key);
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
+    @Override
     public Observable<Boolean> clear() {
         return underlyingCache.clear();
     }

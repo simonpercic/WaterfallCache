@@ -1,7 +1,6 @@
 package com.github.simonpercic.waterfallcache.cache;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 
 import com.anupcowkur.reservoir.Reservoir;
 
@@ -36,8 +35,8 @@ public class ReservoirCache implements Cache {
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
-    public <T> Observable<T> get(@NonNull String key, @NonNull Class<T> classOfT) {
+    @Override
+    public <T> Observable<T> get(String key, Class<T> classOfT) {
         return Reservoir.getAsync(key, classOfT).compose(applySchedulers())
                 .onErrorReturn(throwable -> null);
     }
@@ -45,16 +44,16 @@ public class ReservoirCache implements Cache {
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
-    public Observable<Boolean> put(@NonNull String key, @NonNull Object object) {
+    @Override
+    public Observable<Boolean> put(String key, Object object) {
         return Reservoir.putAsync(key, object).compose(applySchedulers());
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
-    public Observable<Boolean> contains(@NonNull String key) {
+    @Override
+    public Observable<Boolean> contains(String key) {
         return Observable.create(new OnSubscribe<Boolean>() {
             @Override public void call(Subscriber<? super Boolean> subscriber) {
                 try {
@@ -71,15 +70,15 @@ public class ReservoirCache implements Cache {
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
-    public Observable<Boolean> remove(@NonNull String key) {
+    @Override
+    public Observable<Boolean> remove(String key) {
         return Reservoir.deleteAsync(key).compose(applySchedulers());
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override @NonNull
+    @Override
     public Observable<Boolean> clear() {
         return Reservoir.clearAsync().compose(applySchedulers());
     }

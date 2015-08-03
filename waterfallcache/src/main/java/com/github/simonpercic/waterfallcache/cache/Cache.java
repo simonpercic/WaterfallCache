@@ -1,7 +1,5 @@
 package com.github.simonpercic.waterfallcache.cache;
 
-import android.support.annotation.NonNull;
-
 import rx.Observable;
 
 /**
@@ -18,7 +16,7 @@ public interface Cache {
      * @param <T> type of cache value
      * @return Observable that emits the cache value
      */
-    @NonNull <T> Observable<T> get(@NonNull String key, @NonNull Class<T> classOfT);
+    <T> Observable<T> get(String key, Class<T> classOfT);
 
     /**
      * Put value to cache.
@@ -27,7 +25,7 @@ public interface Cache {
      * @param object value
      * @return Observable that emits <tt>true</tt> if successful, <tt>false</tt> otherwise
      */
-    @NonNull Observable<Boolean> put(@NonNull String key, @NonNull Object object);
+    Observable<Boolean> put(String key, Object object);
 
     /**
      * Cache contains key.
@@ -35,7 +33,7 @@ public interface Cache {
      * @param key key
      * @return Observable that emits <tt>true</tt> if cache contains key, <tt>false</tt> otherwise
      */
-    @NonNull Observable<Boolean> contains(@NonNull String key);
+    Observable<Boolean> contains(String key);
 
     /**
      * Remove cache value.
@@ -43,12 +41,12 @@ public interface Cache {
      * @param key key
      * @return Observable that emits <tt>true</tt> if successful, <tt>false</tt> otherwise
      */
-    @NonNull Observable<Boolean> remove(@NonNull String key);
+    Observable<Boolean> remove(String key);
 
     /**
      * Clear all cache values
      *
      * @return Observable that emits <tt>true</tt> if successful, <tt>false</tt> otherwise
      */
-    @NonNull Observable<Boolean> clear();
+    Observable<Boolean> clear();
 }
