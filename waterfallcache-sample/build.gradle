@@ -33,7 +33,7 @@ android {
 dependencies {
     compile 'com.android.support:appcompat-v7:22.2.1'
 
-    compile project(':waterfallcache')
+    compile 'com.github.simonpercic:waterfallcache:1.0.0'
 }
 
 retrolambda {
