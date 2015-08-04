@@ -28,9 +28,10 @@ The library includes a LazyExpirableCache that can work with any [Cache](waterfa
 
 Add using Gradle:
 ```groovy
-compile 'TODO'
-``` 
+compile 'com.github.simonpercic:waterfallcache:1.0.0'
+```
 
+Use:
 ```java
 // create cache
 Cache cache = WaterfallCache.Builder.create()
