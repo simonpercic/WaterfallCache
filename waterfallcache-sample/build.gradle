@@ -35,7 +35,3 @@ dependencies {
 
     compile project(':waterfallcache')
 }
-
-retrolambda {
-    jvmArgs '-noverify'
-}
