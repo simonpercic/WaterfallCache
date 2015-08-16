@@ -22,9 +22,13 @@ public class LazyExpirableCache implements Cache {
     // expire after milliseconds
     private final long expireMillis;
 
-    private LazyExpirableCache(Cache underlyingCache, long expireMillis) {
+    // time observable
+    private final Observable<Long> timeObservable;
+
+    private LazyExpirableCache(Cache underlyingCache, long expireMillis, Observable<Long> timeObservable) {
         this.underlyingCache = underlyingCache;
         this.expireMillis = expireMillis;
+        this.timeObservable = timeObservable;
     }
 
     /**
@@ -36,8 +40,40 @@ public class LazyExpirableCache implements Cache {
      * @return lazy expirable cache instance
      */
     public static LazyExpirableCache fromCache(Cache cache, long expireAfter, TimeUnit expireAfterUnit) {
+        return fromCache(cache, expireAfter, expireAfterUnit, new AndroidSystemTimeProvider());
+    }
+
+    /**
+     * Creates an lazy expirable cache from an actual Cache.
+     *
+     * @param cache the underlying cache that will hold the values
+     * @param expireAfter expire after value
+     * @param expireAfterUnit expire after time unit
+     * @param simpleTimeProvider instance of SimpleTimeProvider
+     * @return lazy expirable cache instance
+     */
+    public static LazyExpirableCache fromCache(Cache cache, long expireAfter, TimeUnit expireAfterUnit,
+            SimpleTimeProvider simpleTimeProvider) {
+
+        Observable<Long> timeObservable = Observable.defer(() -> Observable.just(simpleTimeProvider.currentTime()));
+
+        return fromCache(cache, expireAfter, expireAfterUnit, timeObservable);
+    }
+
+    /**
+     * Creates an lazy expirable cache from an actual Cache.
+     *
+     * @param cache the underlying cache that will hold the values
+     * @param expireAfter expire after value
+     * @param expireAfterUnit expire after time unit
+     * @param timeObservable instance of a time observable
+     * @return lazy expirable cache instance
+     */
+    public static LazyExpirableCache fromCache(Cache cache, long expireAfter, TimeUnit expireAfterUnit,
+            Observable<Long> timeObservable) {
+
         long millis = expireAfterUnit.toMillis(expireAfter);
-        return new LazyExpirableCache(cache, millis);
+        return new LazyExpirableCache(cache, millis, timeObservable);
     }
 
     /**
@@ -45,18 +81,19 @@ public class LazyExpirableCache implements Cache {
      */
     @Override
     public <T> Observable<T> get(String key, Class<T> classOfT) {
-        return underlyingCache.get(key, TimedValue.class).map(timedValue -> {
-            if (timedValue == null) {
-                return null;
-            }
+        return timeObservable.flatMap(currentTime ->
+                underlyingCache.get(key, TimedValue.class).map(timedValue -> {
+                    if (timedValue == null) {
+                        return null;
+                    }
 
-            if (timedValue.addedOn + expireMillis < getCurrentTime()) {
-                underlyingCache.remove(key).subscribe(ObserverUtil.silentObserver());
-                return null;
-            } else {
-                return classOfT.cast(timedValue.value);
-            }
-        });
+                    if (timedValue.addedOn + expireMillis < currentTime) {
+                        underlyingCache.remove(key).subscribe(ObserverUtil.silentObserver());
+                        return null;
+                    } else {
+                        return classOfT.cast(timedValue.value);
+                    }
+                }));
     }
 
     /**
@@ -64,8 +101,10 @@ public class LazyExpirableCache implements Cache {
      */
     @Override
     public Observable<Boolean> put(String key, Object object) {
-        TimedValue timedValue = new TimedValue(object, getCurrentTime());
-        return underlyingCache.put(key, timedValue);
+        return timeObservable.flatMap(currentTime -> {
+            TimedValue timedValue = new TimedValue(object, currentTime);
+            return underlyingCache.put(key, timedValue);
+        });
     }
 
     /**
@@ -90,10 +129,6 @@ public class LazyExpirableCache implements Cache {
     @Override
     public Observable<Boolean> clear() {
         return underlyingCache.clear();
-    }
-
-    private static long getCurrentTime() {
-        return SystemCacheClock.getCurrentTime();
     }
 
     static class TimedValue {

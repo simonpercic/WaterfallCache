@@ -6,11 +6,9 @@ import com.github.simonpercic.waterfallcache.expire.LazyExpirableCache.TimedValu
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.concurrent.TimeUnit;
 
@@ -21,32 +19,30 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 /**
  * LazyExpirableCache tests
  *
  * @author Simon Percic <a href="https://github.com/simonpercic">https://github.com/simonpercic</a>
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(SystemCacheClock.class)
 public class LazyExpirableCacheTest {
+
+    @Mock SimpleTimeProvider simpleTimeProvider;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-
-        mockStatic(SystemCacheClock.class);
     }
 
     @Test
     public void testGetNotExpired() throws Exception {
         Cache underlyingCache = mock(Cache.class);
 
-        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS);
+        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
+                simpleTimeProvider);
 
         long currentTime = TimeUnit.HOURS.toMillis(2);
-        when(SystemCacheClock.getCurrentTime()).thenReturn(currentTime);
+        when(simpleTimeProvider.currentTime()).thenReturn(currentTime);
 
         String cacheKey = "cache_key";
         String testValue = "test";
@@ -64,10 +60,11 @@ public class LazyExpirableCacheTest {
     public void testGetLazyExpired() throws Exception {
         Cache underlyingCache = mock(Cache.class);
 
-        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS);
+        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
+                simpleTimeProvider);
 
         long currentTime = TimeUnit.HOURS.toMillis(2);
-        when(SystemCacheClock.getCurrentTime()).thenReturn(currentTime);
+        when(simpleTimeProvider.currentTime()).thenReturn(currentTime);
 
         String cacheKey = "cache_key";
         String testValue = "test";
@@ -87,10 +84,11 @@ public class LazyExpirableCacheTest {
     public void testGetAlreadyExpired() throws Exception {
         Cache underlyingCache = mock(Cache.class);
 
-        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS);
+        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
+                simpleTimeProvider);
 
         long currentTime = TimeUnit.HOURS.toMillis(2);
-        when(SystemCacheClock.getCurrentTime()).thenReturn(currentTime);
+        when(simpleTimeProvider.currentTime()).thenReturn(currentTime);
 
         String cacheKey = "cache_key";
 
@@ -104,10 +102,11 @@ public class LazyExpirableCacheTest {
     public void testPut() throws Exception {
         Cache underlyingCache = mock(Cache.class);
 
-        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS);
+        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
+                simpleTimeProvider);
 
         long currentTime = TimeUnit.HOURS.toMillis(2);
-        when(SystemCacheClock.getCurrentTime()).thenReturn(currentTime);
+        when(simpleTimeProvider.currentTime()).thenReturn(currentTime);
 
         String cacheKey = "cache_key";
         String testValue = "test";
@@ -127,10 +126,11 @@ public class LazyExpirableCacheTest {
     public void testContains() throws Exception {
         Cache underlyingCache = mock(Cache.class);
 
-        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS);
+        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
+                simpleTimeProvider);
 
         long currentTime = TimeUnit.HOURS.toMillis(2);
-        when(SystemCacheClock.getCurrentTime()).thenReturn(currentTime);
+        when(simpleTimeProvider.currentTime()).thenReturn(currentTime);
 
         String cacheKey = "cache_key";
         String testValue = "test";
@@ -146,10 +146,11 @@ public class LazyExpirableCacheTest {
     public void testNotContains() throws Exception {
         Cache underlyingCache = mock(Cache.class);
 
-        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS);
+        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
+                simpleTimeProvider);
 
         long currentTime = TimeUnit.HOURS.toMillis(2);
-        when(SystemCacheClock.getCurrentTime()).thenReturn(currentTime);
+        when(simpleTimeProvider.currentTime()).thenReturn(currentTime);
 
         String cacheKey = "cache_key";
 
@@ -163,7 +164,8 @@ public class LazyExpirableCacheTest {
     public void testRemove() throws Exception {
         Cache underlyingCache = mock(Cache.class);
 
-        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS);
+        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
+                simpleTimeProvider);
 
         String cacheKey = "cache_key";
 
@@ -178,7 +180,8 @@ public class LazyExpirableCacheTest {
     public void testClear() throws Exception {
         Cache underlyingCache = mock(Cache.class);
 
-        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS);
+        LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
+                simpleTimeProvider);
 
         when(underlyingCache.clear()).thenReturn(Observable.just(true));
 
