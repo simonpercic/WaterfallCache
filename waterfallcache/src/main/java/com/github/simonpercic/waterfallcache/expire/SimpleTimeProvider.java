@@ -1,8 +1,16 @@
 package com.github.simonpercic.waterfallcache.expire;
 
 /**
- * Created by Simon Percic on 16/08/15.
+ * Simple time provider interface.
+ *
+ * @author Simon Percic <a href="https://github.com/simonpercic">https://github.com/simonpercic</a>
  */
 public interface SimpleTimeProvider {
+
+    /**
+     * Should return current time.
+     *
+     * @return current time in milliseconds
+     */
     long currentTime();
 }
