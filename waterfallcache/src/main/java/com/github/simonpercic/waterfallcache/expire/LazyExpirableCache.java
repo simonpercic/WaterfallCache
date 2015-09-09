@@ -14,7 +14,7 @@ import rx.Observable;
  *
  * @author Simon Percic <a href="https://github.com/simonpercic">https://github.com/simonpercic</a>
  */
-public class LazyExpirableCache implements Cache {
+public final class LazyExpirableCache implements Cache {
 
     // the underlying cache that holds the values
     private final Cache underlyingCache;

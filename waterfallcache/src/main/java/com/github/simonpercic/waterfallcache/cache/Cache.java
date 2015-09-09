@@ -3,7 +3,7 @@ package com.github.simonpercic.waterfallcache.cache;
 import rx.Observable;
 
 /**
- * Generic cache interface
+ * Generic cache interface.
  *
  * @author Simon Percic <a href="https://github.com/simonpercic">https://github.com/simonpercic</a>
  */
@@ -44,7 +44,7 @@ public interface Cache {
     Observable<Boolean> remove(String key);
 
     /**
-     * Clear all cache values
+     * Clear all cache values.
      *
      * @return Observable that emits <tt>true</tt> if successful, <tt>false</tt> otherwise
      */

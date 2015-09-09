@@ -27,7 +27,7 @@ import rx.schedulers.Schedulers;
  *
  * @author Simon Percic <a href="https://github.com/simonpercic">https://github.com/simonpercic</a>
  */
-public class WaterfallCache implements Cache {
+public final class WaterfallCache implements Cache {
 
     // cache levels
     private final List<Cache> caches;
@@ -235,9 +235,9 @@ public class WaterfallCache implements Cache {
     // region Builder
 
     /**
-     * Cache builder
+     * Cache builder.
      */
-    public static class Builder {
+    public static final class Builder {
         private final List<Cache> caches;
         private int inlineMemoryCacheSize;
 
