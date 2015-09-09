@@ -3,7 +3,6 @@ package com.github.simonpercic.waterfallcache.expire;
 import com.github.simonpercic.waterfallcache.cache.Cache;
 import com.github.simonpercic.waterfallcache.expire.LazyExpirableCache.TimedValue;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -13,6 +12,8 @@ import org.mockito.MockitoAnnotations;
 import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
+import rx.functions.Action1;
+import rx.observers.TestSubscriber;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
@@ -51,8 +52,11 @@ public class LazyExpirableCacheTest {
                 .thenReturn(Observable.just(
                         new TimedValue(new TestCacheValue(testValue), currentTime - TimeUnit.SECONDS.toMillis(5))));
 
-        lazyExpirableCache.get(cacheKey, TestCacheValue.class).subscribe(timedValue -> {
-            assertEquals(timedValue.value, testValue);
+        //noinspection Convert2Lambda
+        lazyExpirableCache.get(cacheKey, TestCacheValue.class).subscribe(new Action1<TestCacheValue>() {
+            @Override public void call(TestCacheValue timedValue) {
+                assertEquals(timedValue.value, testValue);
+            }
         });
     }
 
@@ -75,7 +79,10 @@ public class LazyExpirableCacheTest {
 
         when(underlyingCache.remove(eq(cacheKey))).thenReturn(Observable.just(true));
 
-        lazyExpirableCache.get(cacheKey, TestCacheValue.class).subscribe(Assert::assertNull);
+        TestSubscriber<TestCacheValue> testSubscriber = new TestSubscriber<>();
+        lazyExpirableCache.get(cacheKey, TestCacheValue.class).subscribe(testSubscriber);
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertValue(null);
 
         verify(underlyingCache).remove(cacheKey);
     }
@@ -95,7 +102,10 @@ public class LazyExpirableCacheTest {
         when(underlyingCache.get(eq(cacheKey), eq(TimedValue.class)))
                 .thenReturn(Observable.just(null));
 
-        lazyExpirableCache.get(cacheKey, TestCacheValue.class).subscribe(Assert::assertNull);
+        TestSubscriber<TestCacheValue> testSubscriber = new TestSubscriber<>();
+        lazyExpirableCache.get(cacheKey, TestCacheValue.class).subscribe(testSubscriber);
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertValue(null);
     }
 
     @Test
@@ -115,7 +125,10 @@ public class LazyExpirableCacheTest {
         ArgumentCaptor<TimedValue> timedValueArgumentCaptor = ArgumentCaptor.forClass(TimedValue.class);
         when(underlyingCache.put(eq(cacheKey), timedValueArgumentCaptor.capture())).thenReturn(Observable.just(true));
 
-        lazyExpirableCache.put(cacheKey, testCacheValue).subscribe(Assert::assertTrue);
+        TestSubscriber<Boolean> testSubscriber = new TestSubscriber<>();
+        lazyExpirableCache.put(cacheKey, testCacheValue).subscribe(testSubscriber);
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertValue(true);
 
         TimedValue timedValue = timedValueArgumentCaptor.getValue();
         assertEquals(timedValue.value, testCacheValue);
@@ -139,7 +152,10 @@ public class LazyExpirableCacheTest {
                 .thenReturn(Observable.just(
                         new TimedValue(new TestCacheValue(testValue), currentTime - TimeUnit.SECONDS.toMillis(5))));
 
-        lazyExpirableCache.contains(cacheKey).subscribe(Assert::assertTrue);
+        TestSubscriber<Boolean> testSubscriber = new TestSubscriber<>();
+        lazyExpirableCache.contains(cacheKey).subscribe(testSubscriber);
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertValue(true);
     }
 
     @Test
@@ -157,7 +173,10 @@ public class LazyExpirableCacheTest {
         when(underlyingCache.get(eq(cacheKey), eq(TimedValue.class)))
                 .thenReturn(Observable.just(null));
 
-        lazyExpirableCache.contains(cacheKey).subscribe(Assert::assertFalse);
+        TestSubscriber<Boolean> testSubscriber = new TestSubscriber<>();
+        lazyExpirableCache.contains(cacheKey).subscribe(testSubscriber);
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertValue(false);
     }
 
     @Test
@@ -171,7 +190,10 @@ public class LazyExpirableCacheTest {
 
         when(underlyingCache.remove(eq(cacheKey))).thenReturn(Observable.just(true));
 
-        lazyExpirableCache.remove(cacheKey).subscribe(Assert::assertTrue);
+        TestSubscriber<Boolean> testSubscriber = new TestSubscriber<>();
+        lazyExpirableCache.remove(cacheKey).subscribe(testSubscriber);
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertValue(true);
 
         verify(underlyingCache).remove(cacheKey);
     }
@@ -185,7 +207,10 @@ public class LazyExpirableCacheTest {
 
         when(underlyingCache.clear()).thenReturn(Observable.just(true));
 
-        lazyExpirableCache.clear().subscribe(Assert::assertTrue);
+        TestSubscriber<Boolean> testSubscriber = new TestSubscriber<>();
+        lazyExpirableCache.clear().subscribe(testSubscriber);
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertValue(true);
 
         verify(underlyingCache).clear();
     }
