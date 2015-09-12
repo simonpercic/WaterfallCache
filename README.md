@@ -3,6 +3,7 @@
 A reactive Android cache composed of multiple cache levels.
 
 [![Build Status](https://api.travis-ci.org/simonpercic/WaterfallCache.svg?branch=master)](https://travis-ci.org/simonpercic/WaterfallCache)
+[ ![Download](https://api.bintray.com/packages/simonpercic/maven/waterfallcache/images/download.svg) ](https://bintray.com/simonpercic/maven/waterfallcache/_latestVersion)
 
 ## How does it work?
 ### Read operations
@@ -25,7 +26,7 @@ You can also implement your own cache and add it to cache levels, as long as it 
 
 Add using Gradle:
 ```groovy
-compile 'com.github.simonpercic:waterfallcache:1.0.1'
+compile 'com.github.simonpercic:waterfallcache:1.0.2'
 ```
 
 Use:
