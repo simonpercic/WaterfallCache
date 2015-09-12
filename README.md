@@ -1,6 +1,6 @@
 # WaterfallCache 
 
-An Observable Android cache composed of multiple cache levels.
+A reactive Android cache composed of multiple cache levels.
 
 [![Build Status](https://api.travis-ci.org/simonpercic/WaterfallCache.svg?branch=master)](https://travis-ci.org/simonpercic/WaterfallCache)
 
@@ -20,9 +20,6 @@ Includes the following caches:
 - disk cache, implemented by the awesome [Reservoir](https://github.com/anupcowkur/Reservoir) by [Anup Cowkur](https://github.com/anupcowkur)
 
 You can also implement your own cache and add it to cache levels, as long as it implements the [Cache interface](waterfallcache/src/main/java/com/github/simonpercic/waterfallcache/cache/Cache.java).
-
-## Values expiration
-The library includes a LazyExpirableCache that can work with any [Cache](waterfallcache/src/main/java/com/github/simonpercic/waterfallcache/cache/Cache.java). It enables lazy value expiration based on the insertion time and an expiration time. Since it's lazy, the values are removed only when trying to obtain them.
 
 ## Usage
 
@@ -53,10 +50,22 @@ Observable<Boolean> remove(String key);
 Observable<Boolean> clear();
 ```
 
+## Values expiration
+The library includes a LazyExpirableCache that can work with any [Cache](waterfallcache/src/main/java/com/github/simonpercic/waterfallcache/cache/Cache.java). It enables lazy value expiration based on the insertion time and an expiration time. Since it's lazy, the values are removed only when trying to obtain them.
+
 ```java
-// create an expirable cache
+// create an expirable cache by passing an instance of a Cache
 Cache expirableCache = LazyExpirableCache.fromCache(cache, 10, TimeUnit.MINUTES);
 ```
+
+### Time provider
+By default, LazyExpirableCache uses Android's built-in [SystemClock.elapsedRealtime()](https://developer.android.com/reference/android/os/SystemClock.html#elapsedRealtime()) as a time provider in order to determine whether a cache value should expire. You can also provide your own time provider, by passing either:
+
+- an implementation of [SimpleTimeProvider](waterfallcache/src/main/java/com/github/simonpercic/waterfallcache/expire/SimpleTimeProvider.java)
+
+or
+
+- an ```Observable<Long>``` that emits the current time
 
 ## Sample application
 See the included sample application to see a practical example of usage.
