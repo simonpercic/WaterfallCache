@@ -68,6 +68,9 @@ or
 
 - an ```Observable<Long>``` that emits the current time
 
+#### RxTime
+You can use [RxTime](https://github.com/simonpercic/RxTime) as a complementary library that provides the current UTC time from the internet to serve as your time provider. That way the values are ensured to expire correctly, even if you are caching them for a longer period of time (which can span device deep sleep or even device restarts).
+
 ## Sample application
 See the included sample application to see a practical example of usage.
 
