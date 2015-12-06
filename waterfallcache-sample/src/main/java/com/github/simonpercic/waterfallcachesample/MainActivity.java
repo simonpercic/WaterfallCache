@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         findViewById(R.id.btn_contains_value).setOnClickListener(this);
         findViewById(R.id.btn_clear).setOnClickListener(this);
 
-        Cache cache = WaterfallCache.Builder.create()
+        Cache cache = WaterfallCache.builder()
                 .addMemoryCache(1000)
                 .addDiskCache(this, 1024 * 1024)
                 .build();
