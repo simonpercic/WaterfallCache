@@ -39,11 +39,11 @@ public final class WaterfallCache implements Cache {
     private final LruCache<String, Object> memoryCache;
 
     // observe on Scheduler
-    private Scheduler observeOnScheduler;
+    private Scheduler observeScheduler;
 
-    private WaterfallCache(List<Cache> caches, int inlineMemoryCacheSize) {
+    private WaterfallCache(List<Cache> caches, Scheduler observeScheduler, int inlineMemoryCacheSize) {
         this.caches = caches;
-        this.observeOnScheduler = AndroidSchedulers.mainThread();
+        this.observeScheduler = observeScheduler;
 
         if (inlineMemoryCacheSize > 0) {
             this.memoryCache = new LruCache<>(inlineMemoryCacheSize);
@@ -207,15 +207,15 @@ public final class WaterfallCache implements Cache {
      * @param scheduler Scheduler
      */
     @SuppressWarnings("NullableProblems")
-    public void setObserveOnScheduler(Scheduler scheduler) {
+    public void setObserveScheduler(Scheduler scheduler) {
         if (scheduler != null) {
-            observeOnScheduler = scheduler;
+            observeScheduler = scheduler;
         }
     }
 
     @SuppressWarnings("RedundantCast")
     private final Transformer schedulersTransformer = observable -> ((Observable) observable).observeOn(
-            observeOnScheduler);
+            observeScheduler);
 
     private <T> Transformer<T, T> applySchedulers() {
         //noinspection unchecked
@@ -239,23 +239,37 @@ public final class WaterfallCache implements Cache {
     // region Builder
 
     /**
+     * Creates a new cache builder.
+     *
+     * @return cache builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Cache builder.
      */
     public static final class Builder {
+
         private final List<Cache> caches;
         private int inlineMemoryCacheSize;
+        private Scheduler observeScheduler;
 
         private Builder() {
             caches = new ArrayList<>();
         }
 
         /**
-         * Creates a new cache builder.
+         * Set a custom observeOn scheduler to control the thread that receives the updates.
+         * Defaults to the Android main thread from AndroidSchedulers.mainThread()
          *
-         * @return cache builder
+         * @param scheduler scheduler to receive the updates
+         * @return Builder
          */
-        public static Builder create() {
-            return new Builder();
+        public Builder withObserveScheduler(Scheduler scheduler) {
+            this.observeScheduler = scheduler;
+            return this;
         }
 
         /**
@@ -318,7 +332,11 @@ public final class WaterfallCache implements Cache {
          * @return WaterfallCache
          */
         public WaterfallCache build() {
-            return new WaterfallCache(caches, inlineMemoryCacheSize);
+            if (observeScheduler == null) {
+                observeScheduler = AndroidSchedulers.mainThread();
+            }
+
+            return new WaterfallCache(caches, observeScheduler, inlineMemoryCacheSize);
         }
     }
 
