@@ -1,13 +1,16 @@
 package com.github.simonpercic.waterfallcache;
 
 import android.content.Context;
+import android.util.Log;
 import android.util.LruCache;
 
+import com.github.simonpercic.waterfallcache.cache.BucketCache;
 import com.github.simonpercic.waterfallcache.cache.Cache;
 import com.github.simonpercic.waterfallcache.cache.ObservableMemoryLruCache;
-import com.github.simonpercic.waterfallcache.cache.ReservoirCache;
 import com.github.simonpercic.waterfallcache.util.ObserverUtil;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,16 +56,17 @@ public final class WaterfallCache implements Cache {
      * {@inheritDoc}
      */
     @Override
-    public <T> Observable<T> get(final String key, final Class<T> classOfT) {
+    public <T> Observable<T> get(final String key, final Type typeOfT) {
         if (memoryCache != null) {
-            T memoryValue = classOfT.cast(memoryCache.get(key));
+            //noinspection unchecked
+            T memoryValue = (T) memoryCache.get(key);
 
             if (memoryValue != null) {
                 return Observable.just(memoryValue).compose(applySchedulers());
             }
         }
 
-        return achieveOnce(null, cache -> cache.get(key, classOfT), value -> value != null)
+        return achieveOnce(null, cache -> cache.<T>get(key, typeOfT), value -> value != null)
                 .map(resultWrapper -> {
                     if (resultWrapper.result != null && resultWrapper.hitCacheIdx > 0) {
                         Observable<Boolean> observable = Observable.just(false);
@@ -146,7 +150,7 @@ public final class WaterfallCache implements Cache {
      * @return Observable that emits <tt>true</tt> if successful, <tt>false</tt> otherwise
      */
     private Observable<Boolean> doOnAll(Func1<Cache, Observable<Boolean>> cacheFn) {
-        Observable<Boolean> observable = Observable.just(false);
+        Observable<Boolean> observable = Observable.just(true);
 
         for (int i = 0; i < caches.size(); i++) {
             Cache cache = caches.get(i);
@@ -282,10 +286,19 @@ public final class WaterfallCache implements Cache {
          * @param context context
          * @param sizeInBytes max cache size in bytes
          * @return Builder
-         * @see ReservoirCache
+         * @see com.github.simonpercic.waterfallcache.cache.BucketCache
          */
         public Builder addDiskCache(Context context, int sizeInBytes) {
-            return addCache(new ReservoirCache(context, sizeInBytes));
+            BucketCache cache;
+
+            try {
+                cache = new BucketCache(context, sizeInBytes);
+            } catch (IOException e) {
+                Log.w(WaterfallCache.class.getSimpleName(), e.getMessage());
+                return this;
+            }
+
+            return addCache(cache);
         }
 
         /**

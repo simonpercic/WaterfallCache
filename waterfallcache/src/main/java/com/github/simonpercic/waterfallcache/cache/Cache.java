@@ -1,5 +1,7 @@
 package com.github.simonpercic.waterfallcache.cache;
 
+import java.lang.reflect.Type;
+
 import rx.Observable;
 
 /**
@@ -12,11 +14,11 @@ public interface Cache {
      * Get from cache.
      *
      * @param key key
-     * @param classOfT class of cache value
-     * @param <T> type of cache value
+     * @param typeOfT type of cache value
+     * @param <T> T of cache value
      * @return Observable that emits the cache value
      */
-    <T> Observable<T> get(String key, Class<T> classOfT);
+    <T> Observable<T> get(String key, Type typeOfT);
 
     /**
      * Put value to cache.

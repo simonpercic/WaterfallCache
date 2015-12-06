@@ -9,13 +9,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
-import rx.functions.Action1;
 import rx.observers.TestSubscriber;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -48,16 +49,17 @@ public class LazyExpirableCacheTest {
         String cacheKey = "cache_key";
         String testValue = "test";
 
-        when(underlyingCache.get(eq(cacheKey), eq(TimedValue.class)))
+        when(underlyingCache.get(eq(cacheKey), any()))
                 .thenReturn(Observable.just(
-                        new TimedValue(new TestCacheValue(testValue), currentTime - TimeUnit.SECONDS.toMillis(5))));
+                        new TimedValue<>(new TestCacheValue(testValue), currentTime - TimeUnit.SECONDS.toMillis(5))));
 
         //noinspection Convert2Lambda
-        lazyExpirableCache.get(cacheKey, TestCacheValue.class).subscribe(new Action1<TestCacheValue>() {
-            @Override public void call(TestCacheValue timedValue) {
-                assertEquals(timedValue.value, testValue);
-            }
-        });
+        TestSubscriber<TestCacheValue> testSubscriber = new TestSubscriber<>();
+        lazyExpirableCache.<TestCacheValue>get(cacheKey, TestCacheValue.class).subscribe(testSubscriber);
+        testSubscriber.assertNoErrors();
+
+        List<TestCacheValue> onNextEvents = testSubscriber.getOnNextEvents();
+        assertEquals(testValue, onNextEvents.get(0).value);
     }
 
     @Test
@@ -73,14 +75,14 @@ public class LazyExpirableCacheTest {
         String cacheKey = "cache_key";
         String testValue = "test";
 
-        when(underlyingCache.get(eq(cacheKey), eq(TimedValue.class)))
+        when(underlyingCache.get(eq(cacheKey), any()))
                 .thenReturn(Observable.just(
-                        new TimedValue(new TestCacheValue(testValue), currentTime - TimeUnit.SECONDS.toMillis(15))));
+                        new TimedValue<>(new TestCacheValue(testValue), currentTime - TimeUnit.SECONDS.toMillis(15))));
 
         when(underlyingCache.remove(eq(cacheKey))).thenReturn(Observable.just(true));
 
         TestSubscriber<TestCacheValue> testSubscriber = new TestSubscriber<>();
-        lazyExpirableCache.get(cacheKey, TestCacheValue.class).subscribe(testSubscriber);
+        lazyExpirableCache.<TestCacheValue>get(cacheKey, TestCacheValue.class).subscribe(testSubscriber);
         testSubscriber.assertNoErrors();
         testSubscriber.assertValue(null);
 
@@ -99,11 +101,11 @@ public class LazyExpirableCacheTest {
 
         String cacheKey = "cache_key";
 
-        when(underlyingCache.get(eq(cacheKey), eq(TimedValue.class)))
+        when(underlyingCache.get(eq(cacheKey), any()))
                 .thenReturn(Observable.just(null));
 
         TestSubscriber<TestCacheValue> testSubscriber = new TestSubscriber<>();
-        lazyExpirableCache.get(cacheKey, TestCacheValue.class).subscribe(testSubscriber);
+        lazyExpirableCache.<TestCacheValue>get(cacheKey, TestCacheValue.class).subscribe(testSubscriber);
         testSubscriber.assertNoErrors();
         testSubscriber.assertValue(null);
     }
@@ -131,7 +133,7 @@ public class LazyExpirableCacheTest {
         testSubscriber.assertValue(true);
 
         TimedValue timedValue = timedValueArgumentCaptor.getValue();
-        assertEquals(timedValue.value, testCacheValue);
+        assertEquals(testCacheValue, timedValue.value);
         assertEquals(currentTime, timedValue.addedOn);
     }
 
@@ -148,9 +150,9 @@ public class LazyExpirableCacheTest {
         String cacheKey = "cache_key";
         String testValue = "test";
 
-        when(underlyingCache.get(eq(cacheKey), eq(TimedValue.class)))
+        when(underlyingCache.get(eq(cacheKey), any()))
                 .thenReturn(Observable.just(
-                        new TimedValue(new TestCacheValue(testValue), currentTime - TimeUnit.SECONDS.toMillis(5))));
+                        new TimedValue<>(new TestCacheValue(testValue), currentTime - TimeUnit.SECONDS.toMillis(5))));
 
         TestSubscriber<Boolean> testSubscriber = new TestSubscriber<>();
         lazyExpirableCache.contains(cacheKey).subscribe(testSubscriber);
@@ -170,7 +172,7 @@ public class LazyExpirableCacheTest {
 
         String cacheKey = "cache_key";
 
-        when(underlyingCache.get(eq(cacheKey), eq(TimedValue.class)))
+        when(underlyingCache.get(eq(cacheKey), any()))
                 .thenReturn(Observable.just(null));
 
         TestSubscriber<Boolean> testSubscriber = new TestSubscriber<>();

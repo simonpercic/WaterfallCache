@@ -2,6 +2,8 @@ package com.github.simonpercic.waterfallcache.cache;
 
 import android.util.LruCache;
 
+import java.lang.reflect.Type;
+
 import rx.Observable;
 import rx.Observable.Transformer;
 import rx.schedulers.Schedulers;
@@ -29,8 +31,9 @@ public class ObservableMemoryLruCache implements Cache {
      * {@inheritDoc}
      */
     @Override
-    public <T> Observable<T> get(String key, Class<T> classOfT) {
-        T value = classOfT.cast(lruCache.get(key));
+    public <T> Observable<T> get(String key, Type typeOfT) {
+        //noinspection unchecked
+        T value = (T) lruCache.get(key);
         return Observable.just(value).compose(applySchedulers());
     }
 

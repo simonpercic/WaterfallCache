@@ -3,8 +3,6 @@ package com.github.simonpercic.waterfallcachesample;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
@@ -53,28 +51,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         waterfallCache = LazyExpirableCache.fromCache(cache, 10, TimeUnit.MINUTES);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     @Override public void onClick(View v) {
         int id = v.getId();
 
@@ -98,8 +74,10 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     }
 
     private void getTest() {
-        Observable<String> test = waterfallCache.get(getKey(), String.class);
-        test.subscribe(tvValueDisplay::setText, throwable -> showOnErrorMessage("Get", throwable));
+        Observable<SimpleObject> test = waterfallCache.get(getKey(), SimpleObject.class);
+        test.subscribe(simpleObject -> {
+            tvValueDisplay.setText(simpleObject != null ? simpleObject.value : "");
+        }, throwable -> showOnErrorMessage("Get", throwable));
     }
 
     private void putTest() {
@@ -107,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             return;
         }
 
-        waterfallCache.put(getKey(), etValueInput.getText().toString()).subscribe(
+        waterfallCache.put(getKey(), new SimpleObject(etValueInput.getText().toString())).subscribe(
                 success -> showOnNextSuccessMessage("Put", success),
                 throwable -> showOnErrorMessage("Put", throwable));
     }
@@ -150,5 +128,13 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     private void showMessage(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private static class SimpleObject {
+        private String value;
+
+        private SimpleObject(String value) {
+            this.value = value;
+        }
     }
 }

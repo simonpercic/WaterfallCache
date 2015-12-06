@@ -3,6 +3,8 @@ package com.github.simonpercic.waterfallcache.expire;
 import com.github.simonpercic.waterfallcache.cache.Cache;
 import com.github.simonpercic.waterfallcache.util.ObserverUtil;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
@@ -80,9 +82,11 @@ public final class LazyExpirableCache implements Cache {
      * {@inheritDoc}
      */
     @Override
-    public <T> Observable<T> get(String key, Class<T> classOfT) {
+    public <T> Observable<T> get(String key, Type type) {
+        TimedValueType timedValueType = new TimedValueType(type);
+
         return timeObservable.flatMap(currentTime ->
-                underlyingCache.get(key, TimedValue.class).map(timedValue -> {
+                underlyingCache.<TimedValue<T>>get(key, timedValueType).map(timedValue -> {
                     if (timedValue == null) {
                         return null;
                     }
@@ -91,7 +95,7 @@ public final class LazyExpirableCache implements Cache {
                         underlyingCache.remove(key).subscribe(ObserverUtil.silentObserver());
                         return null;
                     } else {
-                        return classOfT.cast(timedValue.value);
+                        return timedValue.value;
                     }
                 }));
     }
@@ -102,7 +106,7 @@ public final class LazyExpirableCache implements Cache {
     @Override
     public Observable<Boolean> put(String key, Object object) {
         return timeObservable.flatMap(currentTime -> {
-            TimedValue timedValue = new TimedValue(object, currentTime);
+            TimedValue timedValue = new TimedValue<>(object, currentTime);
             return underlyingCache.put(key, timedValue);
         });
     }
@@ -131,13 +135,36 @@ public final class LazyExpirableCache implements Cache {
         return underlyingCache.clear();
     }
 
-    static class TimedValue {
-        Object value;
+    static class TimedValue<T> {
+        T value;
         long addedOn;
 
-        TimedValue(Object value, long time) {
+        TimedValue(T value, long time) {
             this.value = value;
             this.addedOn = time;
+        }
+    }
+
+    static class TimedValueType implements ParameterizedType {
+        Type type;
+
+        TimedValueType(Type type) {
+            this.type = type;
+        }
+
+        @Override
+        public Type[] getActualTypeArguments() {
+            return new Type[]{type};
+        }
+
+        @Override
+        public Type getRawType() {
+            return TimedValue.class;
+        }
+
+        @Override
+        public Type getOwnerType() {
+            return null;
         }
     }
 }
