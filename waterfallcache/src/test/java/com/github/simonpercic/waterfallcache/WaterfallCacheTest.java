@@ -14,6 +14,7 @@ import rx.schedulers.Schedulers;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -140,6 +141,7 @@ public class WaterfallCacheTest {
         verify(cache2).get(eq(key), eq(Object.class));
 
         verify(cache1).put(eq(key), eq(object));
+        verify(cache2, never()).put(eq(key), eq(object));
     }
 
     @Test
@@ -154,5 +156,29 @@ public class WaterfallCacheTest {
 
         verify(cache1).contains(eq(key));
         verify(cache2).contains(eq(key));
+    }
+
+    @Test
+    public void testRemove() throws Exception {
+        String key = "TEST_KEY";
+
+        when(cache1.remove(eq(key))).thenReturn(Observable.just(true));
+        when(cache2.remove(eq(key))).thenReturn(Observable.just(true));
+
+        ObservableTestUtils.testObservable(waterfallCache.remove(key), Assert::assertTrue);
+
+        verify(cache1).remove(eq(key));
+        verify(cache2).remove(eq(key));
+    }
+
+    @Test
+    public void testClear() throws Exception {
+        when(cache1.clear()).thenReturn(Observable.just(true));
+        when(cache2.clear()).thenReturn(Observable.just(true));
+
+        ObservableTestUtils.testObservable(waterfallCache.clear(), Assert::assertTrue);
+
+        verify(cache1).clear();
+        verify(cache2).clear();
     }
 }
