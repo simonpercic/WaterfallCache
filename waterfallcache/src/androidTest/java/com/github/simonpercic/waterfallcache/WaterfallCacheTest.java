@@ -149,6 +149,98 @@ public class WaterfallCacheTest {
         verify(mockCache, never()).get(eq(key), eq(type));
     }
 
+    @Test
+    public void testGetPrefetchSimpleObject() throws Exception {
+        String key = "TEST_KEY";
+        String value = "TEST_VALUE";
+
+        SimpleObject object = new SimpleObject(value);
+
+        when(mockCache.get(eq(key), eq(SimpleObject.class))).thenReturn(Observable.just(object));
+
+        Observable<SimpleObject> observable = waterfallCache.get(key, SimpleObject.class);
+        testObservable(observable, simpleObject -> assertEquals(value, simpleObject.getValue()));
+
+        Thread.sleep(1000);
+
+        observable = waterfallCache.get(key, SimpleObject.class);
+        testObservable(observable, result -> assertEquals(value, result.getValue()));
+
+        verify(mockCache).get(eq(key), eq(SimpleObject.class));
+    }
+
+    @Test
+    public void testGetPrefetchWrappedObject() throws Exception {
+        String key = "TEST_KEY";
+        String simpleValue = "TEST_SIMPLE_VALUE";
+        String wrappedValue = "TEST_WRAPPED_VALUE";
+
+        SimpleObject simpleObject = new SimpleObject(simpleValue);
+
+        WrappedObject wrappedObject = new WrappedObject();
+        wrappedObject.setObject(simpleObject);
+        wrappedObject.setValue(wrappedValue);
+
+        when(mockCache.get(eq(key), eq(WrappedObject.class))).thenReturn(Observable.just(wrappedObject));
+
+        Observable<WrappedObject> observable = waterfallCache.get(key, WrappedObject.class);
+        testObservable(observable, result -> {
+            assertEquals(wrappedValue, result.getValue());
+            assertEquals(simpleValue, result.getObject().getValue());
+        });
+
+        Thread.sleep(1000);
+
+        observable = waterfallCache.get(key, WrappedObject.class);
+        testObservable(observable, result -> {
+            assertEquals(wrappedValue, result.getValue());
+            assertEquals(simpleValue, result.getObject().getValue());
+        });
+
+        verify(mockCache).get(eq(key), eq(WrappedObject.class));
+    }
+
+    @Test
+    public void testGetPrefetchGenericObject() throws Exception {
+        String key = "TEST_KEY";
+        String simpleValue = "TEST_SIMPLE_VALUE";
+        String wrappedValue = "TEST_WRAPPED_VALUE";
+        String genericValue = "TEST_GENERIC_VALUE";
+
+        SimpleObject simpleObject = new SimpleObject(simpleValue);
+
+        WrappedObject wrappedObject = new WrappedObject();
+        wrappedObject.setObject(simpleObject);
+        wrappedObject.setValue(wrappedValue);
+
+        GenericObject<WrappedObject> genericObject = new GenericObject<>();
+        genericObject.setValue(genericValue);
+        genericObject.setObject(wrappedObject);
+
+        Type type = new TypeToken<GenericObject<WrappedObject>>() {
+        }.getType();
+
+        when(mockCache.get(eq(key), eq(type))).thenReturn(Observable.just(genericObject));
+
+        Observable<GenericObject<WrappedObject>> getObservable = waterfallCache.get(key, type);
+        testObservable(getObservable, result -> {
+            assertEquals(genericValue, result.getValue());
+            assertEquals(wrappedValue, result.getObject().getValue());
+            assertEquals(simpleValue, result.getObject().getObject().getValue());
+        });
+
+        Thread.sleep(1000);
+
+        getObservable = waterfallCache.get(key, type);
+        testObservable(getObservable, result -> {
+            assertEquals(genericValue, result.getValue());
+            assertEquals(wrappedValue, result.getObject().getValue());
+            assertEquals(simpleValue, result.getObject().getObject().getValue());
+        });
+
+        verify(mockCache).get(eq(key), eq(type));
+    }
+
     private <T> void testObservable(Observable<T> observable, Action1<T> assertAction) throws InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
 
