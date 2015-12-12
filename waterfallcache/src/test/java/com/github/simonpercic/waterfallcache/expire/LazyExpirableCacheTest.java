@@ -3,6 +3,7 @@ package com.github.simonpercic.waterfallcache.expire;
 import com.github.simonpercic.waterfallcache.ObservableTestUtils;
 import com.github.simonpercic.waterfallcache.cache.Cache;
 import com.github.simonpercic.waterfallcache.expire.LazyExpirableCache.TimedValue;
+import com.github.simonpercic.waterfallcache.model.SimpleObject;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -51,10 +52,11 @@ public class LazyExpirableCacheTest {
 
         when(underlyingCache.get(eq(cacheKey), any()))
                 .thenReturn(Observable.just(
-                        new TimedValue<>(new TestCacheValue(testValue), currentTime - TimeUnit.SECONDS.toMillis(5))));
+                        new TimedValue<>(new SimpleObject(testValue), currentTime - TimeUnit.SECONDS.toMillis(5))));
 
-        Observable<TestCacheValue> observable = lazyExpirableCache.get(cacheKey, TestCacheValue.class);
-        ObservableTestUtils.testObservable(observable, testCacheValue -> assertEquals(testValue, testCacheValue.value));
+        Observable<SimpleObject> observable = lazyExpirableCache.get(cacheKey, SimpleObject.class);
+        ObservableTestUtils.testObservable(observable,
+                simpleObject -> assertEquals(testValue, simpleObject.getValue()));
     }
 
     @Test
@@ -72,11 +74,11 @@ public class LazyExpirableCacheTest {
 
         when(underlyingCache.get(eq(cacheKey), any()))
                 .thenReturn(Observable.just(
-                        new TimedValue<>(new TestCacheValue(testValue), currentTime - TimeUnit.SECONDS.toMillis(15))));
+                        new TimedValue<>(new SimpleObject(testValue), currentTime - TimeUnit.SECONDS.toMillis(15))));
 
         when(underlyingCache.remove(eq(cacheKey))).thenReturn(Observable.just(true));
 
-        Observable<TestCacheValue> observable = lazyExpirableCache.get(cacheKey, TestCacheValue.class);
+        Observable<SimpleObject> observable = lazyExpirableCache.get(cacheKey, SimpleObject.class);
         ObservableTestUtils.testObservable(observable, Assert::assertNull, false);
 
         verify(underlyingCache).remove(cacheKey);
@@ -97,7 +99,7 @@ public class LazyExpirableCacheTest {
         when(underlyingCache.get(eq(cacheKey), any()))
                 .thenReturn(Observable.just(null));
 
-        Observable<TestCacheValue> observable = lazyExpirableCache.get(cacheKey, TestCacheValue.class);
+        Observable<SimpleObject> observable = lazyExpirableCache.get(cacheKey, SimpleObject.class);
         ObservableTestUtils.testObservable(observable, Assert::assertNull, false);
     }
 
@@ -113,16 +115,16 @@ public class LazyExpirableCacheTest {
 
         String cacheKey = "cache_key";
         String testValue = "test";
-        TestCacheValue testCacheValue = new TestCacheValue(testValue);
+        SimpleObject simpleObject = new SimpleObject(testValue);
 
         ArgumentCaptor<TimedValue> timedValueArgumentCaptor = ArgumentCaptor.forClass(TimedValue.class);
         when(underlyingCache.put(eq(cacheKey), timedValueArgumentCaptor.capture())).thenReturn(Observable.just(true));
 
-        Observable<Boolean> observable = lazyExpirableCache.put(cacheKey, testCacheValue);
+        Observable<Boolean> observable = lazyExpirableCache.put(cacheKey, simpleObject);
         ObservableTestUtils.testObservable(observable, Assert::assertTrue);
 
         TimedValue timedValue = timedValueArgumentCaptor.getValue();
-        assertEquals(testCacheValue, timedValue.value);
+        assertEquals(simpleObject, timedValue.value);
         assertEquals(currentTime, timedValue.addedOn);
     }
 
@@ -141,7 +143,7 @@ public class LazyExpirableCacheTest {
 
         when(underlyingCache.get(eq(cacheKey), any()))
                 .thenReturn(Observable.just(
-                        new TimedValue<>(new TestCacheValue(testValue), currentTime - TimeUnit.SECONDS.toMillis(5))));
+                        new TimedValue<>(new SimpleObject(testValue), currentTime - TimeUnit.SECONDS.toMillis(5))));
 
         Observable<Boolean> observable = lazyExpirableCache.contains(cacheKey);
         ObservableTestUtils.testObservable(observable, Assert::assertTrue);
@@ -196,13 +198,5 @@ public class LazyExpirableCacheTest {
         ObservableTestUtils.testObservable(observable, Assert::assertTrue);
 
         verify(underlyingCache).clear();
-    }
-
-    private static class TestCacheValue {
-        private final String value;
-
-        public TestCacheValue(String value) {
-            this.value = value;
-        }
     }
 }
