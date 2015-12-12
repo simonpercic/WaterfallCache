@@ -19,7 +19,7 @@ public final class ObservableTestUtils {
         //no instance
     }
 
-    public static <T> void testObservable(Observable<T> observable, Action1<T> assertAction) {
+    public static <T> void testObservable(Observable<T> observable, Action1<T> assertAction, boolean assertNotNull) {
         observable = observable.subscribeOn(Schedulers.immediate());
 
         TestSubscriber<T> testSubscriber = new TestSubscriber<>();
@@ -32,7 +32,15 @@ public final class ObservableTestUtils {
         assertEquals(1, onNextEvents.size());
 
         T value = onNextEvents.get(0);
-        assertNotNull(value);
+
+        if (assertNotNull) {
+            assertNotNull(value);
+        }
+
         assertAction.call(value);
+    }
+
+    public static <T> void testObservable(Observable<T> observable, Action1<T> assertAction) {
+        testObservable(observable, assertAction, true);
     }
 }
