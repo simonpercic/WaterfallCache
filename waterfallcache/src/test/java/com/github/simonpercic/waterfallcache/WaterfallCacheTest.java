@@ -82,6 +82,8 @@ public class WaterfallCacheTest {
         when(cache1.get(eq(key), eq(SimpleObject.class))).thenReturn(Observable.just(null));
         when(cache2.get(eq(key), eq(SimpleObject.class))).thenReturn(Observable.just(object));
 
+        when(cache1.put(eq(key), eq(object))).thenReturn(Observable.just(true));
+
         Observable<SimpleObject> observable = waterfallCache.get(key, SimpleObject.class);
         ObservableTestUtils.testObservable(observable, simpleObject -> assertEquals(value, simpleObject.getValue()));
 
@@ -130,6 +132,8 @@ public class WaterfallCacheTest {
 
         when(cache1.get(eq(key), eq(Object.class))).thenReturn(Observable.just(null));
         when(cache2.get(eq(key), eq(Object.class))).thenReturn(Observable.just(object));
+
+        when(cache1.put(eq(key), eq(object))).thenReturn(Observable.just(true));
 
         Observable<Boolean> observable = waterfallCache.contains(key);
         ObservableTestUtils.testObservable(observable, Assert::assertTrue);

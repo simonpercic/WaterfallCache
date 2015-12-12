@@ -74,8 +74,6 @@ public class WaterfallCacheTest {
 
         testObservable(waterfallCache.contains(key), Assert::assertTrue);
 
-        Thread.sleep(1000);
-
         Observable<SimpleObject> getObservable = waterfallCache.get(key, SimpleObject.class);
         testObservable(getObservable, result -> assertEquals(value, result.getValue()));
 
@@ -99,8 +97,6 @@ public class WaterfallCacheTest {
         when(mockCache.get(eq(key), eq(Object.class))).thenReturn(Observable.just(wrappedObject));
 
         testObservable(waterfallCache.contains(key), Assert::assertTrue);
-
-        Thread.sleep(1000);
 
         Observable<WrappedObject> getObservable = waterfallCache.get(key, WrappedObject.class);
         testObservable(getObservable, result -> {
@@ -134,8 +130,6 @@ public class WaterfallCacheTest {
 
         testObservable(waterfallCache.contains(key), Assert::assertTrue);
 
-        Thread.sleep(1000);
-
         Type type = new TypeToken<GenericObject<WrappedObject>>() {
         }.getType();
 
@@ -160,8 +154,6 @@ public class WaterfallCacheTest {
 
         Observable<SimpleObject> observable = waterfallCache.get(key, SimpleObject.class);
         testObservable(observable, simpleObject -> assertEquals(value, simpleObject.getValue()));
-
-        Thread.sleep(1000);
 
         observable = waterfallCache.get(key, SimpleObject.class);
         testObservable(observable, result -> assertEquals(value, result.getValue()));
@@ -188,8 +180,6 @@ public class WaterfallCacheTest {
             assertEquals(wrappedValue, result.getValue());
             assertEquals(simpleValue, result.getObject().getValue());
         });
-
-        Thread.sleep(1000);
 
         observable = waterfallCache.get(key, WrappedObject.class);
         testObservable(observable, result -> {
@@ -228,8 +218,6 @@ public class WaterfallCacheTest {
             assertEquals(wrappedValue, result.getObject().getValue());
             assertEquals(simpleValue, result.getObject().getObject().getValue());
         });
-
-        Thread.sleep(1000);
 
         getObservable = waterfallCache.get(key, type);
         testObservable(getObservable, result -> {

@@ -67,8 +67,6 @@ public class LazyExpirableCacheTest {
 
         verify(mockCache).remove(eq(cacheKey));
 
-        Thread.sleep(1000);
-
         reset(mockCache);
 
         when(mockCache.get(eq(cacheKey), eq(SimpleObject.class))).thenReturn(Observable.just(null));

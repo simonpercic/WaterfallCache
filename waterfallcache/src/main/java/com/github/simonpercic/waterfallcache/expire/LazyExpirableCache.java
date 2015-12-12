@@ -1,7 +1,6 @@
 package com.github.simonpercic.waterfallcache.expire;
 
 import com.github.simonpercic.waterfallcache.cache.Cache;
-import com.github.simonpercic.waterfallcache.util.ObserverUtil;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -86,16 +85,15 @@ public final class LazyExpirableCache implements Cache {
         TimedValueType timedValueType = new TimedValueType(type);
 
         return timeObservable.flatMap(currentTime ->
-                underlyingCache.<TimedValue<T>>get(key, timedValueType).map(timedValue -> {
+                underlyingCache.<TimedValue<T>>get(key, timedValueType).flatMap(timedValue -> {
                     if (timedValue == null) {
-                        return null;
+                        return Observable.just(null);
                     }
 
                     if (timedValue.addedOn + expireMillis < currentTime) {
-                        underlyingCache.remove(key).subscribe(ObserverUtil.silentObserver());
-                        return null;
+                        return underlyingCache.remove(key).map(success -> null);
                     } else {
-                        return timedValue.value;
+                        return Observable.just(timedValue.value);
                     }
                 }));
     }

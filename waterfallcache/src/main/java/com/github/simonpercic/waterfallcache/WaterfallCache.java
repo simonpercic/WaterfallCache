@@ -7,7 +7,6 @@ import android.util.LruCache;
 import com.github.simonpercic.waterfallcache.cache.BucketCache;
 import com.github.simonpercic.waterfallcache.cache.Cache;
 import com.github.simonpercic.waterfallcache.cache.ObservableMemoryLruCache;
-import com.github.simonpercic.waterfallcache.util.ObserverUtil;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -67,7 +66,7 @@ public final class WaterfallCache implements Cache {
         }
 
         return achieveOnce(null, cache -> cache.<T>get(key, typeOfT), value -> value != null)
-                .map(resultWrapper -> {
+                .flatMap(resultWrapper -> {
                     if (resultWrapper.result != null && resultWrapper.hitCacheIdx > 0) {
                         Observable<Boolean> observable = Observable.just(false);
 
@@ -77,10 +76,10 @@ public final class WaterfallCache implements Cache {
                             observable = observable.flatMap(success -> cache.put(key, resultWrapper.result));
                         }
 
-                        observable.subscribe(ObserverUtil.silentObserver());
+                        return observable.map(success -> resultWrapper.result);
                     }
 
-                    return resultWrapper.result;
+                    return Observable.just(resultWrapper.result);
                 });
     }
 
@@ -110,12 +109,12 @@ public final class WaterfallCache implements Cache {
         }
 
         return achieveOnce(false, cache -> cache.contains(key), value -> value)
-                .map(resultWrapper -> {
+                .flatMap(resultWrapper -> {
                     if (resultWrapper.result && resultWrapper.hitCacheIdx > 0) {
-                        get(key, Object.class).subscribe(ObserverUtil.silentObserver());
+                        return get(key, Object.class).map(o -> true);
                     }
 
-                    return resultWrapper.result;
+                    return Observable.just(resultWrapper.result);
                 });
     }
 
