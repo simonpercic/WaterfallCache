@@ -13,14 +13,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Type;
-import java.util.List;
 
 import rx.Observable;
-import rx.observers.TestSubscriber;
 import rx.schedulers.Schedulers;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -53,19 +50,8 @@ public class WaterfallCacheInlineMemoryTest {
         when(cache.get(eq(key), eq(SimpleObject.class))).thenReturn(Observable.just(null));
 
         Observable<SimpleObject> observable = waterfallCache.get(key, SimpleObject.class);
-        observable = observable.subscribeOn(Schedulers.immediate());
 
-        TestSubscriber<SimpleObject> testSubscriber = new TestSubscriber<>();
-        observable.subscribe(testSubscriber);
-
-        testSubscriber.assertNoErrors();
-        testSubscriber.assertValueCount(1);
-
-        List<SimpleObject> onNextEvents = testSubscriber.getOnNextEvents();
-        assertEquals(1, onNextEvents.size());
-
-        SimpleObject value = onNextEvents.get(0);
-        assertNull(value);
+        ObservableTestUtils.testObservable(observable, Assert::assertNull, false);
     }
 
     @Test

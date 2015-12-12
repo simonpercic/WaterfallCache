@@ -10,14 +10,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Type;
-import java.util.List;
 
 import rx.Observable;
-import rx.observers.TestSubscriber;
 import rx.schedulers.Schedulers;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 /**
  * @author Simon Percic <a href="https://github.com/simonpercic">https://github.com/simonpercic</a>
@@ -39,19 +36,8 @@ public class WaterfallCacheInlineMemoryOnlyTest {
         String key = "TEST_KEY";
 
         Observable<SimpleObject> observable = waterfallCache.get(key, SimpleObject.class);
-        observable = observable.subscribeOn(Schedulers.immediate());
 
-        TestSubscriber<SimpleObject> testSubscriber = new TestSubscriber<>();
-        observable.subscribe(testSubscriber);
-
-        testSubscriber.assertNoErrors();
-        testSubscriber.assertValueCount(1);
-
-        List<SimpleObject> onNextEvents = testSubscriber.getOnNextEvents();
-        assertEquals(1, onNextEvents.size());
-
-        SimpleObject value = onNextEvents.get(0);
-        assertNull(value);
+        ObservableTestUtils.testObservable(observable, Assert::assertNull, false);
     }
 
     @Test
