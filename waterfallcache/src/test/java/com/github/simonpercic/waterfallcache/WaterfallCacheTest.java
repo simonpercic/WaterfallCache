@@ -36,7 +36,7 @@ public class WaterfallCacheTest {
         waterfallCache = WaterfallCache.builder()
                 .addCache(cache1)
                 .addCache(cache2)
-                .withObserveScheduler(Schedulers.immediate())
+                .withObserveOnScheduler(Schedulers.immediate())
                 .build();
     }
 

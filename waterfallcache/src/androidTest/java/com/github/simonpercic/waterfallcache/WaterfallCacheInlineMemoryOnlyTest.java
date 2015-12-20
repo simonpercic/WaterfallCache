@@ -27,7 +27,7 @@ public class WaterfallCacheInlineMemoryOnlyTest {
     public void setUp() throws Exception {
         waterfallCache = WaterfallCache.builder()
                 .addMemoryCache(100)
-                .withObserveScheduler(Schedulers.immediate())
+                .withObserveOnScheduler(Schedulers.immediate())
                 .build();
     }
 

@@ -40,7 +40,7 @@ public class LazyExpirableCacheTest {
         waterfallCache = WaterfallCache.builder()
                 .addMemoryCache(10)
                 .addCache(mockCache)
-                .withObserveScheduler(Schedulers.immediate())
+                .withObserveOnScheduler(Schedulers.immediate())
                 .build();
     }
 

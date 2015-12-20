@@ -39,7 +39,7 @@ public class WaterfallCacheInlineMemoryTest {
         waterfallCache = WaterfallCache.builder()
                 .addMemoryCache(100)
                 .addCache(cache)
-                .withObserveScheduler(Schedulers.immediate())
+                .withObserveOnScheduler(Schedulers.immediate())
                 .build();
     }
 

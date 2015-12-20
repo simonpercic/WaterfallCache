@@ -48,7 +48,7 @@ public class WaterfallCacheTest {
         waterfallCache = WaterfallCache.builder()
                 .addDiskCache(context, 1024 * 1024)
                 .addCache(mockCache)
-                .withObserveScheduler(Schedulers.immediate())
+                .withObserveOnScheduler(Schedulers.immediate())
                 .build();
     }
 
