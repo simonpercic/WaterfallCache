@@ -7,6 +7,10 @@ import android.util.LruCache;
 import com.github.simonpercic.waterfallcache.cache.BucketCache;
 import com.github.simonpercic.waterfallcache.cache.Cache;
 import com.github.simonpercic.waterfallcache.cache.ObservableMemoryLruCache;
+import com.github.simonpercic.waterfallcache.callback.WaterfallCallback;
+import com.github.simonpercic.waterfallcache.callback.WaterfallFailureCallback;
+import com.github.simonpercic.waterfallcache.callback.WaterfallGetCallback;
+import com.github.simonpercic.waterfallcache.utils.StringUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -18,6 +22,7 @@ import rx.Observable;
 import rx.Observable.Transformer;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -50,6 +55,8 @@ public final class WaterfallCache implements Cache {
             this.memoryCache = null;
         }
     }
+
+    // region Cache methods
 
     /**
      * {@inheritDoc}
@@ -142,6 +149,8 @@ public final class WaterfallCache implements Cache {
         return doOnAll(Cache::clear);
     }
 
+    // endregion Cache methods
+
     /**
      * Performs a cache function on all cache levels sequentially.
      *
@@ -200,6 +209,95 @@ public final class WaterfallCache implements Cache {
                 .compose(applySchedulers());
     }
 
+    // region asynchronous methods
+
+    /**
+     * Get from cache - async, using a callback.
+     *
+     * @param key key
+     * @param typeOfT type of cache value
+     * @param callback callback that will be invoked to return the value
+     * @param <T> T of cache value
+     */
+    public <T> void getAsync(String key, Type typeOfT, final WaterfallGetCallback<T> callback) {
+        checkGetArgs(key, typeOfT);
+
+        Observable<T> get = get(key, typeOfT);
+        doAsync(get, callback);
+    }
+
+    /**
+     * Put value to cache - async, using a callback.
+     *
+     * @param key key
+     * @param object object
+     * @param callback callback that will be invoked to report status
+     */
+    public void putAsync(String key, Object object, final WaterfallCallback callback) {
+        checkPutArgs(key, object);
+
+        doAsync(put(key, object), callback);
+    }
+
+    /**
+     * Cache contains key - async, using a callback.
+     *
+     * @param key key
+     * @param callback callback that will be invoked to report contains state
+     */
+    public void containsAsync(String key, final WaterfallGetCallback<Boolean> callback) {
+        checkKeyArg(key);
+
+        doAsync(contains(key), callback);
+    }
+
+    /**
+     * Remove cache value - async, using a callback.
+     *
+     * @param key key
+     * @param callback callback that will be invoked to report status
+     */
+    public void removeAsync(String key, final WaterfallCallback callback) {
+        checkKeyArg(key);
+
+        doAsync(remove(key), callback);
+    }
+
+    /**
+     * Clear all cache values - async, using a callback.
+     *
+     * @param callback callback that will be invoked to report status
+     */
+    public void clearAsync(final WaterfallCallback callback) {
+        doAsync(clear(), callback);
+    }
+
+    private static void doAsync(Observable<Boolean> observable, final WaterfallCallback callback) {
+        observable.subscribe(success -> {
+            if (callback != null) {
+                callback.onSuccess();
+            }
+        }, asyncOnError(callback));
+    }
+
+    private static <T> void doAsync(Observable<T> observable, final WaterfallGetCallback<T> callback) {
+        observable.subscribe(value -> {
+            if (callback != null) {
+                callback.onSuccess(value);
+            }
+        }, asyncOnError(callback));
+    }
+
+    private static Action1<Throwable> asyncOnError(final WaterfallFailureCallback callback) {
+        return throwable -> {
+            if (callback != null) {
+                callback.onFailure(throwable);
+            }
+        };
+    }
+
+    // endregion asynchronous methods
+
     /**
      * Sets a scheduler to observe on.
      *
@@ -233,6 +331,36 @@ public final class WaterfallCache implements Cache {
             this.hitCacheIdx = hitCacheIdx;
         }
     }
+
+    // region args checks
+
+    private static void checkGetArgs(String key, Type typeOfT) {
+        checkStringArgumentEmpty(key, "key");
+        checkObjectArgumentNull(typeOfT, "typeOfT");
+    }
+
+    private static void checkPutArgs(String key, Object object) {
+        checkStringArgumentEmpty(key, "key");
+        checkObjectArgumentNull(object, "object");
+    }
+
+    private static void checkKeyArg(String key) {
+        checkStringArgumentEmpty(key, "key");
+    }
+
+    private static void checkStringArgumentEmpty(String value, String name) {
+        if (StringUtils.isEmpty(value)) {
+            throw new IllegalArgumentException(String.format("%s is null or empty", name));
+        }
+    }
+
+    private static void checkObjectArgumentNull(Object value, String name) {
+        if (value == null) {
+            throw new IllegalArgumentException(String.format("%s is null", name));
+        }
+    }
+
+    // endregion args checks
 
     // region Builder
 
