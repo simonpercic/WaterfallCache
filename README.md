@@ -74,6 +74,8 @@ You can use [RxTime](https://github.com/simonpercic/RxTime) as a complementary l
 ## Sample application
 See the included sample application to see a practical example of usage.
 
-## License
+## Change Log
+See [CHANGELOG.md](CHANGELOG.md)
 
+## License
 Open source, distributed under the MIT License. See [LICENSE](LICENSE) for details.
