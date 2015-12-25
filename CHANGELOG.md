@@ -5,7 +5,8 @@ Version 1.1.0 *(20??-??-??)*
 ----------------------------
 
  * New: Replaced Reservoir disk cache with [Bucket](https://github.com/simonpercic/Bucket).
- * New: Added async methods to WaterfallCache.
+ * New: Added async methods to WaterfallCache and LazyExpirableCache.
+ * New: You must now implement `RxCache` to provide custom cache levels.
  * New: Passing `Type` instead of `Class<T>` to properly support Java generics and collections.
  * New: Added the ability to specify which thread to subscribe to results on (via ObserveOn Rx Scheduler).
  * New: A lot of tests.
