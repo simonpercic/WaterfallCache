@@ -1,6 +1,6 @@
 package com.github.simonpercic.waterfallcache;
 
-import com.github.simonpercic.waterfallcache.cache.Cache;
+import com.github.simonpercic.waterfallcache.cache.RxCache;
 import com.github.simonpercic.waterfallcache.callback.WaterfallCallback;
 import com.github.simonpercic.waterfallcache.callback.WaterfallGetCallback;
 import com.github.simonpercic.waterfallcache.model.SimpleObject;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
  */
 public class WaterfallCacheAsyncTest {
 
-    @Mock Cache cache;
+    @Mock RxCache cache;
 
     WaterfallCache waterfallCache;
 

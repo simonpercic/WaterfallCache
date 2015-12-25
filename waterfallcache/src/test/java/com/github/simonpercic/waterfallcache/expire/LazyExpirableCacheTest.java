@@ -1,7 +1,7 @@
 package com.github.simonpercic.waterfallcache.expire;
 
 import com.github.simonpercic.waterfallcache.ObservableTestUtils;
-import com.github.simonpercic.waterfallcache.cache.Cache;
+import com.github.simonpercic.waterfallcache.cache.RxCache;
 import com.github.simonpercic.waterfallcache.expire.LazyExpirableCache.TimedValue;
 import com.github.simonpercic.waterfallcache.model.SimpleObject;
 
@@ -39,7 +39,7 @@ public class LazyExpirableCacheTest {
 
     @Test
     public void testGetNotExpired() throws Exception {
-        Cache underlyingCache = mock(Cache.class);
+        RxCache underlyingCache = mock(RxCache.class);
 
         LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
                 simpleTimeProvider);
@@ -61,7 +61,7 @@ public class LazyExpirableCacheTest {
 
     @Test
     public void testGetLazyExpired() throws Exception {
-        Cache underlyingCache = mock(Cache.class);
+        RxCache underlyingCache = mock(RxCache.class);
 
         LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
                 simpleTimeProvider);
@@ -86,7 +86,7 @@ public class LazyExpirableCacheTest {
 
     @Test
     public void testGetAlreadyExpired() throws Exception {
-        Cache underlyingCache = mock(Cache.class);
+        RxCache underlyingCache = mock(RxCache.class);
 
         LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
                 simpleTimeProvider);
@@ -105,7 +105,7 @@ public class LazyExpirableCacheTest {
 
     @Test
     public void testPut() throws Exception {
-        Cache underlyingCache = mock(Cache.class);
+        RxCache underlyingCache = mock(RxCache.class);
 
         LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
                 simpleTimeProvider);
@@ -130,7 +130,7 @@ public class LazyExpirableCacheTest {
 
     @Test
     public void testContains() throws Exception {
-        Cache underlyingCache = mock(Cache.class);
+        RxCache underlyingCache = mock(RxCache.class);
 
         LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
                 simpleTimeProvider);
@@ -151,7 +151,7 @@ public class LazyExpirableCacheTest {
 
     @Test
     public void testNotContains() throws Exception {
-        Cache underlyingCache = mock(Cache.class);
+        RxCache underlyingCache = mock(RxCache.class);
 
         LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
                 simpleTimeProvider);
@@ -170,7 +170,7 @@ public class LazyExpirableCacheTest {
 
     @Test
     public void testRemove() throws Exception {
-        Cache underlyingCache = mock(Cache.class);
+        RxCache underlyingCache = mock(RxCache.class);
 
         LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
                 simpleTimeProvider);
@@ -187,7 +187,7 @@ public class LazyExpirableCacheTest {
 
     @Test
     public void testClear() throws Exception {
-        Cache underlyingCache = mock(Cache.class);
+        RxCache underlyingCache = mock(RxCache.class);
 
         LazyExpirableCache lazyExpirableCache = LazyExpirableCache.fromCache(underlyingCache, 10, TimeUnit.SECONDS,
                 simpleTimeProvider);

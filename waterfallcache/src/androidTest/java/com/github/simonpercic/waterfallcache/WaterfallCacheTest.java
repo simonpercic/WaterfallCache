@@ -3,7 +3,7 @@ package com.github.simonpercic.waterfallcache;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
-import com.github.simonpercic.waterfallcache.cache.Cache;
+import com.github.simonpercic.waterfallcache.cache.RxCache;
 import com.github.simonpercic.waterfallcache.model.GenericObject;
 import com.github.simonpercic.waterfallcache.model.SimpleObject;
 import com.github.simonpercic.waterfallcache.model.WrappedObject;
@@ -38,12 +38,12 @@ public class WaterfallCacheTest {
 
     private static WaterfallCache waterfallCache;
 
-    private static Cache mockCache;
+    private static RxCache mockCache;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         Context context = InstrumentationRegistry.getTargetContext();
-        mockCache = mock(Cache.class);
+        mockCache = mock(RxCache.class);
 
         waterfallCache = WaterfallCache.builder()
                 .addDiskCache(context, 1024 * 1024)

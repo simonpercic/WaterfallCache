@@ -15,7 +15,7 @@ import rx.Observable;
  *
  * @author Simon Percic <a href="https://github.com/simonpercic">https://github.com/simonpercic</a>
  */
-public class BucketCache implements Cache {
+public class BucketCache implements RxCache {
 
     // Bucket disk cache
     private final Bucket bucket;

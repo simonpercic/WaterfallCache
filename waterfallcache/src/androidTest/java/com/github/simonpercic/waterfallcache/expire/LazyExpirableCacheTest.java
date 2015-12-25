@@ -2,7 +2,7 @@ package com.github.simonpercic.waterfallcache.expire;
 
 import com.github.simonpercic.waterfallcache.ObservableTestUtils;
 import com.github.simonpercic.waterfallcache.WaterfallCache;
-import com.github.simonpercic.waterfallcache.cache.Cache;
+import com.github.simonpercic.waterfallcache.cache.RxCache;
 import com.github.simonpercic.waterfallcache.expire.LazyExpirableCache.TimedValue;
 import com.github.simonpercic.waterfallcache.model.SimpleObject;
 
@@ -30,7 +30,7 @@ public class LazyExpirableCacheTest {
 
     private WaterfallCache waterfallCache;
 
-    @Mock Cache mockCache;
+    @Mock RxCache mockCache;
     @Mock SimpleTimeProvider simpleTimeProvider;
 
     @Before

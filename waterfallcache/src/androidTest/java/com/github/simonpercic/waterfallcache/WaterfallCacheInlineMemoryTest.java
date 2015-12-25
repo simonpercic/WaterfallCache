@@ -1,6 +1,6 @@
 package com.github.simonpercic.waterfallcache;
 
-import com.github.simonpercic.waterfallcache.cache.Cache;
+import com.github.simonpercic.waterfallcache.cache.RxCache;
 import com.github.simonpercic.waterfallcache.model.GenericObject;
 import com.github.simonpercic.waterfallcache.model.SimpleObject;
 import com.github.simonpercic.waterfallcache.model.WrappedObject;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
  */
 public class WaterfallCacheInlineMemoryTest {
 
-    @Mock Cache cache;
+    @Mock RxCache cache;
 
     WaterfallCache waterfallCache;
 

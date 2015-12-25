@@ -1,6 +1,6 @@
 package com.github.simonpercic.waterfallcache;
 
-import com.github.simonpercic.waterfallcache.cache.Cache;
+import com.github.simonpercic.waterfallcache.cache.RxCache;
 import com.github.simonpercic.waterfallcache.model.SimpleObject;
 
 import org.junit.Assert;
@@ -24,8 +24,8 @@ import static org.mockito.Mockito.when;
  */
 public class WaterfallCacheTest {
 
-    @Mock Cache cache1;
-    @Mock Cache cache2;
+    @Mock RxCache cache1;
+    @Mock RxCache cache2;
 
     WaterfallCache waterfallCache;
 

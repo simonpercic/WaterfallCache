@@ -6,10 +6,10 @@ import android.util.LruCache;
 
 import com.github.simonpercic.waterfallcache.cache.BucketCache;
 import com.github.simonpercic.waterfallcache.cache.Cache;
-import com.github.simonpercic.waterfallcache.cache.ObservableMemoryLruCache;
+import com.github.simonpercic.waterfallcache.cache.RxCache;
 import com.github.simonpercic.waterfallcache.callback.WaterfallCallback;
-import com.github.simonpercic.waterfallcache.callback.WaterfallFailureCallback;
 import com.github.simonpercic.waterfallcache.callback.WaterfallGetCallback;
+import com.github.simonpercic.waterfallcache.utils.AsyncUtils;
 import com.github.simonpercic.waterfallcache.utils.StringUtils;
 
 import java.io.IOException;
@@ -22,7 +22,6 @@ import rx.Observable;
 import rx.Observable.Transformer;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -37,7 +36,7 @@ import rx.schedulers.Schedulers;
 public final class WaterfallCache implements Cache {
 
     // cache levels
-    private final List<Cache> caches;
+    private final List<RxCache> caches;
 
     // inline memory cache, separate to cache levels for performance's sake
     private final LruCache<String, Object> memoryCache;
@@ -45,7 +44,7 @@ public final class WaterfallCache implements Cache {
     // observe on Scheduler
     private Scheduler observeOnScheduler;
 
-    private WaterfallCache(List<Cache> caches, Scheduler observeOnScheduler, int inlineMemoryCacheSize) {
+    private WaterfallCache(List<RxCache> caches, Scheduler observeOnScheduler, int inlineMemoryCacheSize) {
         this.caches = caches;
         this.observeOnScheduler = observeOnScheduler;
 
@@ -78,7 +77,7 @@ public final class WaterfallCache implements Cache {
                         Observable<Boolean> observable = Observable.just(false);
 
                         for (int i = 0; i < resultWrapper.hitCacheIdx; i++) {
-                            Cache cache = caches.get(i);
+                            RxCache cache = caches.get(i);
 
                             observable = observable.flatMap(success -> cache.put(key, resultWrapper.result));
                         }
@@ -146,7 +145,7 @@ public final class WaterfallCache implements Cache {
             memoryCache.evictAll();
         }
 
-        return doOnAll(Cache::clear);
+        return doOnAll(RxCache::clear);
     }
 
     // endregion Cache methods
@@ -157,11 +156,11 @@ public final class WaterfallCache implements Cache {
      * @param cacheFn cache function to perform on all cache levels
      * @return Observable that emits <tt>true</tt> if successful, <tt>false</tt> otherwise
      */
-    private Observable<Boolean> doOnAll(Func1<Cache, Observable<Boolean>> cacheFn) {
+    private Observable<Boolean> doOnAll(Func1<RxCache, Observable<Boolean>> cacheFn) {
         Observable<Boolean> observable = Observable.just(true);
 
         for (int i = 0; i < caches.size(); i++) {
-            Cache cache = caches.get(i);
+            RxCache cache = caches.get(i);
 
             observable = observable.flatMap(success -> cacheFn.call(cache));
         }
@@ -180,7 +179,7 @@ public final class WaterfallCache implements Cache {
      */
     private <T> Observable<ResultWrapper<T>> achieveOnce(
             T defaultValue,
-            Func1<Cache, Observable<T>> cacheFn,
+            Func1<RxCache, Observable<T>> cacheFn,
             Predicate<T> condition) {
 
         Observable<T> observable = Observable.just(defaultValue);
@@ -188,7 +187,7 @@ public final class WaterfallCache implements Cache {
         AtomicInteger hitIndex = new AtomicInteger();
 
         for (int i = 0; i < caches.size(); i++) {
-            Cache cache = caches.get(i);
+            RxCache cache = caches.get(i);
 
             if (i == 0) {
                 observable = observable.flatMap(s -> cacheFn.call(cache));
@@ -212,88 +211,52 @@ public final class WaterfallCache implements Cache {
     // region asynchronous methods
 
     /**
-     * Get from cache - async, using a callback.
-     *
-     * @param key key
-     * @param typeOfT type of cache value
-     * @param callback callback that will be invoked to return the value
-     * @param <T> T of cache value
+     * {@inheritDoc}
      */
-    public <T> void getAsync(String key, Type typeOfT, final WaterfallGetCallback<T> callback) {
+    @Override
+    public <T> void getAsync(String key, Type typeOfT, WaterfallGetCallback<T> callback) {
         checkGetArgs(key, typeOfT);
 
         Observable<T> get = get(key, typeOfT);
-        doAsync(get, callback);
+        AsyncUtils.doAsync(get, callback);
     }
 
     /**
-     * Put value to cache - async, using a callback.
-     *
-     * @param key key
-     * @param object object
-     * @param callback callback that will be invoked to report status
+     * {@inheritDoc}
      */
-    public void putAsync(String key, Object object, final WaterfallCallback callback) {
+    @Override
+    public void putAsync(String key, Object object, WaterfallCallback callback) {
         checkPutArgs(key, object);
 
-        doAsync(put(key, object), callback);
+        AsyncUtils.doAsync(put(key, object), callback);
     }
 
     /**
-     * Cache contains key - async, using a callback.
-     *
-     * @param key key
-     * @param callback callback that will be invoked to report contains state
+     * {@inheritDoc}
      */
-    public void containsAsync(String key, final WaterfallGetCallback<Boolean> callback) {
+    @Override
+    public void containsAsync(String key, WaterfallGetCallback<Boolean> callback) {
         checkKeyArg(key);
 
-        doAsync(contains(key), callback);
+        AsyncUtils.doAsync(contains(key), callback);
     }
 
     /**
-     * Remove cache value - async, using a callback.
-     *
-     * @param key key
-     * @param callback callback that will be invoked to report status
+     * {@inheritDoc}
      */
-    public void removeAsync(String key, final WaterfallCallback callback) {
+    @Override
+    public void removeAsync(String key, WaterfallCallback callback) {
         checkKeyArg(key);
 
-        doAsync(remove(key), callback);
+        AsyncUtils.doAsync(remove(key), callback);
     }
 
     /**
-     * Clear all cache values - async, using a callback.
-     *
-     * @param callback callback that will be invoked to report status
+     * {@inheritDoc}
      */
-    public void clearAsync(final WaterfallCallback callback) {
-        doAsync(clear(), callback);
-    }
-
-    private static void doAsync(Observable<Boolean> observable, final WaterfallCallback callback) {
-        observable.subscribe(success -> {
-            if (callback != null) {
-                callback.onSuccess();
-            }
-        }, asyncOnError(callback));
-    }
-
-    private static <T> void doAsync(Observable<T> observable, final WaterfallGetCallback<T> callback) {
-        observable.subscribe(value -> {
-            if (callback != null) {
-                callback.onSuccess(value);
-            }
-        }, asyncOnError(callback));
-    }
-
-    private static Action1<Throwable> asyncOnError(final WaterfallFailureCallback callback) {
-        return throwable -> {
-            if (callback != null) {
-                callback.onFailure(throwable);
-            }
-        };
+    @Override
+    public void clearAsync(WaterfallCallback callback) {
+        AsyncUtils.doAsync(clear(), callback);
     }
 
     // endregion asynchronous methods
@@ -378,7 +341,7 @@ public final class WaterfallCache implements Cache {
      */
     public static final class Builder {
 
-        private final List<Cache> caches;
+        private final List<RxCache> caches;
         private int inlineMemoryCacheSize;
         private Scheduler observeOnScheduler;
 
@@ -410,17 +373,6 @@ public final class WaterfallCache implements Cache {
         }
 
         /**
-         * Add a pre-defined observable memory cache to the cache levels. Use {#addMemoryCache} for performance.
-         *
-         * @param size max items to cache
-         * @return Builder
-         * @see ObservableMemoryLruCache
-         */
-        public Builder addObservableMemoryCache(int size) {
-            return addCache(new ObservableMemoryLruCache(size));
-        }
-
-        /**
          * Add a pre-defined disk cache to the cache levels.
          *
          * @param context context
@@ -447,7 +399,7 @@ public final class WaterfallCache implements Cache {
          * @param cache cache
          * @return Builder
          */
-        public Builder addCache(Cache cache) {
+        public Builder addCache(RxCache cache) {
             caches.add(cache);
             return this;
         }
