@@ -26,7 +26,7 @@ You can also implement your own cache and add it to cache levels, as long as it 
 
 Add using Gradle:
 ```groovy
-compile 'com.github.simonpercic:waterfallcache:1.0.2'
+compile 'com.github.simonpercic:waterfallcache:1.1.0'
 ```
 
 Use:
