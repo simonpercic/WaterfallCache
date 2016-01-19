@@ -1,6 +1,8 @@
 # WaterfallCache 
 
-A reactive Android cache composed of multiple cache levels.
+Multi-level RxJava-powered cache for Android.
+
+Supports Rx and async methods for all operations.
 
 [![Build Status](https://api.travis-ci.org/simonpercic/WaterfallCache.svg?branch=master)](https://travis-ci.org/simonpercic/WaterfallCache)
 [ ![Download](https://api.bintray.com/packages/simonpercic/maven/waterfallcache/images/download.svg) ](https://bintray.com/simonpercic/maven/waterfallcache/_latestVersion)
@@ -18,9 +20,9 @@ Values are written and removed from all cache levels.
 Includes the following caches:
 
 - memory cache, implemented by [LruCache](http://developer.android.com/reference/android/util/LruCache.html)
-- disk cache, implemented by the awesome [Reservoir](https://github.com/anupcowkur/Reservoir) by [Anup Cowkur](https://github.com/anupcowkur)
+- [Bucket](https://github.com/simonpercic/Bucket) disk cache
 
-You can also implement your own cache and add it to cache levels, as long as it implements the [Cache interface](waterfallcache/src/main/java/com/github/simonpercic/waterfallcache/cache/Cache.java).
+You can also implement your own cache and add it to cache levels, as long as it implements the [RxCache interface](waterfallcache/src/main/java/com/github/simonpercic/waterfallcache/cache/RxCache.java).
 
 ## Usage
 
@@ -32,14 +34,14 @@ compile 'com.github.simonpercic:waterfallcache:1.1.0'
 Use:
 ```java
 // create cache
-Cache cache = WaterfallCache.Builder.create()
+Cache cache = WaterfallCache.builder()
                 .addMemoryCache(1000)
                 .addDiskCache(this, 1024 * 1024)
                 .build();
 ```
 
+### Rx
 ```java
-// use the following Cache methods
 Observable<T> get(String key, Class<T> classOfT);
 
 Observable<Boolean> put(String key, Object object);
@@ -49,6 +51,21 @@ Observable<Boolean> contains(String key);
 Observable<Boolean> remove(String key);
 
 Observable<Boolean> clear();
+```
+
+or
+
+### Async
+```java
+<T> void getAsync(String key, Type typeOfT, WaterfallGetCallback<T> callback);
+
+void putAsync(String key, Object object, WaterfallCallback callback);
+
+void containsAsync(String key, WaterfallGetCallback<Boolean> callback);
+
+void removeAsync(String key, WaterfallCallback callback);
+
+void clearAsync(WaterfallCallback callback);
 ```
 
 ## Values expiration
