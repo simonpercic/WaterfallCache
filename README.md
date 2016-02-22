@@ -7,6 +7,14 @@ Supports Rx and async methods for all operations.
 [![Build Status](https://api.travis-ci.org/simonpercic/WaterfallCache.svg?branch=master)](https://travis-ci.org/simonpercic/WaterfallCache)
 [ ![Download](https://api.bintray.com/packages/simonpercic/maven/waterfallcache/images/download.svg) ](https://bintray.com/simonpercic/maven/waterfallcache/_latestVersion)
 
+## Caches
+Includes the following caches:
+
+- memory cache, implemented by [LruCache](http://developer.android.com/reference/android/util/LruCache.html)
+- [Bucket](https://github.com/simonpercic/Bucket) disk cache
+
+You can also implement your own cache and add it to cache levels, as long as it implements the [RxCache interface](waterfallcache/src/main/java/com/github/simonpercic/waterfallcache/cache/RxCache.java).
+
 ## How does it work?
 ### Read operations
 When getting a value, it will first try to obtain it from the first cache level, if it does not contain it, it will try to obtain it from the next cache level. This continues through all cache levels until the value is obtained.
@@ -15,14 +23,6 @@ Upon obtaining the value, it is written to all cache levels that are lower than 
 
 ### Write operations
 Values are written and removed from all cache levels.
-
-## Caches
-Includes the following caches:
-
-- memory cache, implemented by [LruCache](http://developer.android.com/reference/android/util/LruCache.html)
-- [Bucket](https://github.com/simonpercic/Bucket) disk cache
-
-You can also implement your own cache and add it to cache levels, as long as it implements the [RxCache interface](waterfallcache/src/main/java/com/github/simonpercic/waterfallcache/cache/RxCache.java).
 
 ## Usage
 
