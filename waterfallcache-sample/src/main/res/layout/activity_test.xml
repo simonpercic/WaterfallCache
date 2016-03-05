@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity">
+    tools:context=".test.RxActivity">
 
     <TextView
         android:id="@+id/tv_value_display"
@@ -18,7 +18,7 @@
         android:id="@+id/btn_get_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Get Value" />
+        android:text="@string/get_value" />
 
     <EditText
         android:id="@+id/et_value_input"
@@ -30,30 +30,30 @@
         android:id="@+id/btn_put_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Put Value" />
+        android:text="@string/put_value" />
 
     <Button
         android:id="@+id/btn_remove_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Remove Value" />
+        android:text="@string/remove_value" />
 
     <Button
         android:id="@+id/btn_contains_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Contains Value" />
+        android:text="@string/contains_value" />
 
     <Button
         android:id="@+id/btn_clear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Clear" />
+        android:text="@string/clear" />
 
     <EditText
         android:id="@+id/et_key_input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Cache key"
+        android:hint="@string/cache_key"
         android:inputType="text" />
 </LinearLayout>
